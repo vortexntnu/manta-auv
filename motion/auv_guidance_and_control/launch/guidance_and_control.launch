@@ -1,0 +1,4 @@
+<launch>
+  <arg name="namespace" /> 
+  <node name="guidance_and_control" pkg="auv_guidance_and_control" type="guidance_and_control_node.py" ns="$(arg namespace)" output="screen" />
+</launch>

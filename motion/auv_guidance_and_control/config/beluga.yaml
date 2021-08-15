@@ -1,0 +1,65 @@
+# This file defines parameters specific to Beluga
+#
+# When looking at the AUV from above, the thruster placement is:   
+
+# Parameters that will be used in the guidance, navigation and control system.
+
+model_parameters:
+  mass: 25.4 # kg
+  volume: 0.025 # m^3
+  center_of_mass: [0, 0, 0] # w.r.t. ENU
+  center_of_buoyancy: [0, 0, 0.026] # w.r.t. ENU
+  inertia: # Inertia about center of mass
+    [[ 0.5, 0, 0],
+     [ 0, 1.1, 0],
+     [ 0, 0, 1.2]]
+  water_density: 997
+  M_A: [20, 40, 50, 0.5, 2, 2] # Added mass
+  D: [-20, -40, -50, -3, -10, -10] # Linear damping
+
+thruster_parameters:
+  first_order_time_constant: 0.2
+  rotor_constant: 0.00000364
+  positions: # w.r.t. ENU
+    [[  0.238, -0.220,  0.065],
+     [  0.120, -0.220,  0.065],
+     [ -0.120, -0.220,  0.065],
+     [ -0.240, -0.220,  0.065],
+     [ -0.240,  0.220,  0.065],
+     [ -0.120,  0.220,  0.065],
+     [  0.120,  0.220,  0.065],
+     [  0.238,  0.220,  0.065]]
+  orientations: # w.r.t. ENU
+    [[ 0,      0, -2.356],
+     [ 0, -1.571,      0],
+     [ 0, -1.571,      0],
+     [ 0,      0, -0.785],
+     [ 0,      0,  0.785],
+     [ 0, -1.571,      0],
+     [ 0, -1.571,      0],
+     [ 0,      0,  2.356]]
+
+guidance_and_control_parameters:
+  sphere_of_acceptence: 0.1
+  control_input_saturation_limits: [-10.5, 10.5]
+  control_forces_weights: [0.1, 0.1, 0.1, 10, 10, 1] # Weigths for what DOF is highest priority when allocation control forces
+  control_bandwidth: [0.6, 0.6, 0.6, 0.6, 0.6, 0.6]
+  relative_damping_ratio: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+  absolute_relative_velocity_limit: 0.5
+  reference_model_control_bandwidth_gain: 0.5 # <= 1
+  reference_model_control_input_saturation_limit_gain: 0.8 # <= 1
+  virtual_target_controller_bandwidths: [0.75, 0.75, 0.75, 1, 1, 1.5] 
+  virtual_target_along_track_speed_saturation_limits: [-0.2, 0.2] # <= 1
+  virtual_target_control_input_saturation_limit_gain: 0.8 # <= 1
+  current_estimator_heading_angle_change: 3.14
+  current_estimator_number_of_samples: 2
+  publish_rate: 20
+
+
+
+
+ 
+
+
+
+  
