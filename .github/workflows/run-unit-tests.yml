@@ -1,0 +1,84 @@
+# From https://github.com/marketplace/actions/ros-2-ci-action
+name: Run Unit Tests
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  test_docker: # Iterates on all ROS 1 and ROS 2 distributions.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distribution:
+          - humble
+          - iron
+
+        # Define the Docker image(s) associated with each ROS distribution.
+        # The include syntax allows additional variables to be defined, like
+        # docker_image in this case. See documentation:
+        # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
+        #
+        # Platforms are defined in REP 3 and REP 2000:
+        # https://ros.org/reps/rep-0003.html
+        # https://ros.org/reps/rep-2000.html
+        include:
+          # Humble Hawksbill (May 2022 - May 2027)
+          - docker_image: ubuntu:jammy
+            ros_distribution: humble
+            ros_version: 2
+
+          # Iron Irwini (May 2023 - November 2024)
+          - docker_image: ubuntu:jammy
+            ros_distribution: iron
+            ros_version: 2
+
+          # Rolling Ridley (No End-Of-Life)
+          - docker_image: ubuntu:jammy
+            ros_distribution: rolling
+            ros_version: 2
+
+    container:
+      image: ${{ matrix.docker_image }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Setup ROS environment
+        uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
+      - name: Build and test ROS 2 packages
+        uses: ros-tooling/action-ros-ci@v0.3
+        id: action_ros_ci_steps
+        with:
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["coverage-gcc", "coverage-pytest"]
+              },
+              "test": {
+                "mixin": ["coverage-pytest"]
+              }
+            }
+          # If possible, pin the repository in the workflow to a specific commit to avoid
+          # changes in colcon-mixin-repository from breaking your tests.
+          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
+
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          
+      - uses: codecov/codecov-action@v1.2.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ros_ws/lcov/total_coverage.info,ros_ws/coveragepy/.coverage
+          flags: unittests
+          name: codecov-umbrella
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Colcon-logs
+          path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
+        if: always() # upload the logs even when the build fails
+
+
+          
