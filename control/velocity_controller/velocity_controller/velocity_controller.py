@@ -5,11 +5,11 @@ from rclpy.node import Node
 
 
 class VelocityNode(Node):
+
     def __init__(self):
         super().__init__("input_subscriber")
         self.topic_subscriber = self.create_subscription(
-            Odometry, "/nucleus/odom", self.subscribe_callback, 10
-        )
+            Odometry, "/nucleus/odom", self.subscribe_callback, 10)
 
     def subscribe_callback(self, msg: Odometry):
         self.get_logger().info(
