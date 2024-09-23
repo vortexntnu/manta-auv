@@ -7,6 +7,7 @@ from geometry_msgs.msg import Wrench
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 
+
 #A function to convert orientation quaternions to euler angles
 def quaternion_to_euler_angle(w, x, y, z):
     ysqr = y * y
@@ -45,9 +46,9 @@ class VelocityNode(Node):
     def __init__(self):
         super().__init__("input_subscriber")
         self.topic_subscriber = self.create_subscription(
-            Odometry, "/nucleus/odom", self.subscribe_callback, 10
-        )
-        self.publisher = self.create_publisher(Wrench, "/thrust/wrench_input", 10)
+            Odometry, "/nucleus/odom", self.subscribe_callback, 10)
+        self.publisher = self.create_publisher(Wrench, "/thrust/wrench_input",
+                                               10)
         self.timer = self.create_timer(0.1, self.publish_callback)
 
         # Defining all the errors of all the states
@@ -72,13 +73,11 @@ class VelocityNode(Node):
         return angle
 
     def subscribe_callback(self, msg: Odometry):  # callback function
-        self.position = np.array(
-            [
-                msg.pose.pose.position.x,
-                msg.pose.pose.position.y,
-                msg.pose.pose.position.z,
-            ]
-        )
+        self.position = np.array([
+            msg.pose.pose.position.x,
+            msg.pose.pose.position.y,
+            msg.pose.pose.position.z,
+        ])
 
         # GETTING THE GOAL POSITION
         self.goal_yaw = np.arctan2(
@@ -93,25 +92,19 @@ class VelocityNode(Node):
         self.heave_error = self.goal_position[2] - self.position[2]
 
         # GETTING THE ERROR OF ALL STATES
-        self.yaw_error = (
-            self.goal_yaw
-            - quaternion_to_euler_angle(
-                msg.pose.pose.orientation.w,
-                msg.pose.pose.orientation.x,
-                msg.pose.pose.orientation.y,
-                msg.pose.pose.orientation.z,
-            )[2]
-        )
+        self.yaw_error = (self.goal_yaw - quaternion_to_euler_angle(
+            msg.pose.pose.orientation.w,
+            msg.pose.pose.orientation.x,
+            msg.pose.pose.orientation.y,
+            msg.pose.pose.orientation.z,
+        )[2])
 
-        self.pitch_error = (
-            self.goal_pitch
-            - quaternion_to_euler_angle(
-                msg.pose.pose.orientation.w,
-                msg.pose.pose.orientation.x,
-                msg.pose.pose.orientation.y,
-                msg.pose.pose.orientation.z,
-            )[1]
-        )
+        self.pitch_error = (self.goal_pitch - quaternion_to_euler_angle(
+            msg.pose.pose.orientation.w,
+            msg.pose.pose.orientation.x,
+            msg.pose.pose.orientation.y,
+            msg.pose.pose.orientation.z,
+        )[1])
 
         self.radius_error = np.linalg.norm(self.position - self.goal_position)
 
@@ -125,14 +118,13 @@ class VelocityNode(Node):
         if abs(self.yaw_error) < yaw_tolerance:
             msg.force.z = -Kp_heave * self.heave_error
 
-        if (
-            abs(self.heave_error) < heave_tolerance
-            and abs(self.yaw_error) < yaw_tolerance
-        ):
+        if (abs(self.heave_error) < heave_tolerance
+                and abs(self.yaw_error) < yaw_tolerance):
             if self.radius_error < radius_tolerance:
                 msg.force.x = 0.0
             else:
-                msg.force.x = Kp_linear * self.radius_error * np.cos(self.yaw_error)
+                msg.force.x = Kp_linear * self.radius_error * np.cos(
+                    self.yaw_error)
 
         self.get_logger().info(
             f"\nyaw_error: {self.ssa(self.yaw_error)}, \npitch_error: {self.ssa(self.pitch_error)}, \nradius_error: {self.radius_error}"
