@@ -9,8 +9,10 @@ class VelocityNode(Node):
 
     def __init__(self):
         super().__init__("input_subscriber")
-        self.topic_subscriber = self.create_subscription(Odometry, "/nucleus/odom", self.subscribe_callback, 10)
-        self.publisher = self.create_publisher(Wrench, "/thrust/wrench_input", 10)
+        self.topic_subscriber = self.create_subscription(
+            Odometry, "/nucleus/odom", self.subscribe_callback, 10)
+        self.publisher = self.create_publisher(Wrench, "/thrust/wrench_input",
+                                               10)
         self.timer = self.create_timer(0.1, self.publish_callback)
         
 
