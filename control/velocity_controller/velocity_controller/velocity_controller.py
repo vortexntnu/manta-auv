@@ -14,12 +14,12 @@ class VelocityNode(Node):
         self.timer = self.create_timer(0.1, self.publish_callback)
         
 
-    def subscribe_callback(self, msg: Odometry):
+    def subscribe_callback(self, msg: Odometry): #callback function
         self.get_logger().info(
             f"\n_x: {msg.pose.pose.position.x}\n_y: {msg.pose.pose.position.y}\n_z: {msg.pose.pose.position.z}"
         )
     
-    def publish_callback(self):
+    def publish_callback(self): #callback function
         msg = Wrench()
         msg.force.x = 1.0
         msg.torque.y = 1.0
@@ -27,7 +27,7 @@ class VelocityNode(Node):
         self.publisher.publish(msg)
 
 
-def main(args=None):
+def main(args=None): #main function
     rclpy.init(args=args)
     node = VelocityNode()
     rclpy.spin(node)
