@@ -28,6 +28,7 @@ def quaternion_to_euler_angle(w, x, y, z):
 
     return X, Y, Z
 
+
 # A function to convert the angle to the smallest signed angle
 def ssa(angle):
     if angle > np.pi:
@@ -53,9 +54,8 @@ class VelocityNode(Node):
     def __init__(self):
         super().__init__("input_subscriber")
         self.nucleus_subscriber = self.create_subscription(
-            Odometry, "/nucleus/odom", self.nucleus_callback, 10
-        )
-        
+            Odometry, "/nucleus/odom", self.nucleus_callback, 10)
+
         self.guidance_subscriber = self.create_subscription(
             Float32MultiArray, "/guidance/los", self.guidance_callback, 10
         )
@@ -108,26 +108,21 @@ class VelocityNode(Node):
         self.get_logger().info("Velocity Controller Node has been started")
 
     def nucleus_callback(self, msg: Odometry):  # callback function
-        self.position = np.array(
-            [
-                msg.pose.pose.position.x,
-                msg.pose.pose.position.y,
-                msg.pose.pose.position.z,
-            ]
-        )
-        
-        self.twist = np.array(
-            [
-            msg.twist.twist.linear.x, 
-             msg.twist.twist.linear.y, 
-             msg.twist.twist.linear.z
-             ]
-        )
-        
-        X,Y,Z = quaternion_to_euler_angle(msg.pose.pose.orientation.w, 
-                                          msg.pose.pose.orientation.x, 
-                                          msg.pose.pose.orientation.y, 
-                                          msg.pose.pose.orientation.z)
+        self.position = np.array([
+            msg.pose.pose.position.x,
+            msg.pose.pose.position.y,
+            msg.pose.pose.position.z,
+        ])
+
+        self.twist = np.array([
+            msg.twist.twist.linear.x, msg.twist.twist.linear.y,
+            msg.twist.twist.linear.z
+        ])
+
+        X, Y, Z = quaternion_to_euler_angle(msg.pose.pose.orientation.w,
+                                            msg.pose.pose.orientation.x,
+                                            msg.pose.pose.orientation.y,
+                                            msg.pose.pose.orientation.z)
         self.orientation = np.array([X, Y, Z])
         
         # self.rotated_point_position[0], self.rotated_point_position[1], self.rotated_point_position[2] = rotate_point(self.position[0], self.position[1], self.position[2], Y, X, Z)
@@ -142,7 +137,7 @@ class VelocityNode(Node):
         self.heave_error = self.abu_values[1] - self.rotated_point_position[2]
         self.pitch_error = ssa(self.abu_values[2] - self.orientation[1])
         self.yaw_error = ssa(self.abu_values[3] - self.orientation[2])
-        
+
         msg = Wrench()
         
         # if abs(self.pitch_error) < 0.05 and abs(self.yaw_error < 0.05):
@@ -177,12 +172,13 @@ class VelocityNode(Node):
         
     def publish_states(self):
         msg = Float32MultiArray()
-        msg.data = [self.abu_values[2], self.abu_values[3],
-                    self.orientation[1], self.orientation[2],
-                    self.abu_values[0], self.abu_values[1],
-                    self.twist[0], self.twist[2]]
+        msg.data = [
+            self.abu_values[2], self.abu_values[3], self.orientation[1],
+            self.orientation[2], self.abu_values[0], self.abu_values[1],
+            self.twist[0], self.twist[2]
+        ]
         self.publisher_states.publish(msg)
-        
+
 
 def main(args=None):  # main function
     rclpy.init(args=args)
