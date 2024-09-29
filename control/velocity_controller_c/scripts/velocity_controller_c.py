@@ -9,6 +9,7 @@ from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray
 
 
+
 #A function to convert orientation quaternions to euler angles
 def quaternion_to_euler_angle(w, x, y, z):
     ysqr = y * y
@@ -52,6 +53,20 @@ class VelocityNode(Node):
         self.publisher_states = self.create_publisher(Float32MultiArray, "/Velocity/States", 10)
         self.control_timer = self.create_timer(0.1, self.publish_callback)
         self.state_timer = self.create_timer(0.3, self.publish_states)
+        self.topic_subscriber = self.create_subscription(
+            Odometry, "/nucleus/odom", self.subscribe_callback, 10)
+        self.publisher = self.create_publisher(Wrench, "/thrust/wrench_input",
+                                               10)
+        self.timer = self.create_timer(0.1, self.publish_callback)
+
+        # Defining all the errors of all the states
+        self.pitch_error = 0.0
+        self.heave_error = 0.0
+        self.yaw_error = 0.0
+        self.radius_error = 0.0
+        self.heave_error = 0.0
+        self.goal_pitch = 0.0
+        self.goal_yaw = 0.0
 
         # Arbitrary goal position as its Abu's task to feed us this information
         self.position = np.array([0.0, 0.0, 0.0])
