@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-import rclpy
-
 import math as math
-import control as ct
-import numpy as np
 
+import numpy as np
+import rclpy
 from geometry_msgs.msg import Wrench
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray
+
+import control as ct
 
 
 def quaternion_to_euler_angle(w, x, y, z):
@@ -29,6 +29,10 @@ def quaternion_to_euler_angle(w, x, y, z):
 
     return X, Y, Z
 
+#  Function to calculate the coriolis matrix
+def calculate_coriolis_matrix(self, pitch_rate, yaw_rate):
+    return np.array([[1.629*pitch_rate, 0], [0, 1.769*yaw_rate]])
+
 #----------------------------------------------------------------Controller Node----------------------------------------------------------------
 
 
@@ -36,89 +40,76 @@ class VelocityLQRNode(Node):
 
     def __init__(self):
         super().__init__("input_subscriber")
-        self.nucleus_subscriber = self.create_subscription(
-            Odometry, "/nucleus/odom", self.nucleus_callback, 10)
-
-        self.guidance_subscriber = self.create_subscription(
-            Float32MultiArray, "/guidance/los", self.guidance_callback, 10)
-
-        self.publisherLQR = self.create_publisher(Wrench,
-                                                  "/thrust/wrench_input", 10)
-        self.publisher_states = self.create_publisher(Float32MultiArray,
-                                                      "/velocity/states", 10)
+        self.nucleus_subscriber = self.create_subscription(Odometry, "/nucleus/odom", self.nucleus_callback, 10)
+        self.guidance_subscriber = self.create_subscription(Float32MultiArray, "/guidance/los", self.guidance_callback, 10)
+        self.publisherLQR = self.create_publisher(Wrench,"/thrust/wrench_input", 10)
+        self.publisher_states = self.create_publisher(Float32MultiArray,"/velocity/states", 10)
 
         self.control_timer = self.create_timer(0.1, self.LQR_controller)
         self.state_timer = self.create_timer(0.3, self.publish_states)
         self.topic_subscriber = self.create_subscription(
             Odometry, "/nucleus/odom", self.nucleus_callback, 10)
+        
+        self.guidance_values = [np.pi/4, np.pi/4] # guidance values TEMPORARY
 
         # TODO: state space model, Anders showed me the chapter in the book from page 55 on for this
-        self.M = np.eye(6) * 30  # mass matrix with mass = 30kg
-        self.A = np.array([[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]])
-        self.B = np.array([[0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
-                           [0, 0]])  # depending on number of control inputs
-        self.Q = np.eye(6)  # state cost matrix
+        self.M = np.array([[1.629, 0],[0, 1.769]])  # mass matrix with mass = 30kg
+        self.M_inv = np.linalg.inv(self.M)  # inverse of mass matrix
+        self.C = np.array([[0, 0],[0, 0]])
+        
+        self.A = np.eye(2) # depending on number of states
+        self.B = np.eye(2) # depending on number of control inputs
+        self.Q = np.eye(2)  # state cost matrix
         self.R = np.eye(2)  # control cost matrix
 
-        # State vector 1. x-position, 2. y-position, 3. z-position, 4. roll, 5. pitch, 6. yaw
-        self.states = np.array([0.0], [0.0], [0.0], [0.0], [0.0], [0.0])
+        # State vector 1. pitch, 2. yaw
+        self.states = np.array([0, 0])
 
 
 #---------------------------------------------------------------Callback Functions---------------------------------------------------------------
 
+    def nucleus_callback(self, msg: Odometry):  # callback function
+        
+        dummy , self.states[0], self.states[1] = quaternion_to_euler_angle(
+            msg.pose.pose.orientation.w, msg.pose.pose.orientation.x,
+            msg.pose.pose.orientation.y, msg.pose.pose.orientation.z)
 
-def nucleus_callback(self, msg: Odometry):  # callback function
-    self.states[0] = msg.pose.pose.position.x
-    self.states[1] = msg.pose.pose.position.y
-    self.states[2] = msg.pose.pose.position.z
+        # Coriolis matrix
+        self.C = calculate_coriolis_matrix(self, msg.twist.twist.angular.y, msg.twist.twist.angular.z)
 
-    self.states[3], self.states[4], self.states[5] = quaternion_to_euler_angle(
-        msg.pose.pose.orientation.w, msg.pose.pose.orientation.x,
-        msg.pose.pose.orientation.y, msg.pose.pose.orientation.z)
-
-
-def guidance_callback(
-        self, msg: Float32MultiArray):  # Function to read data from guidance
-    self.guidance_values = msg.data
+    def guidance_callback(
+            self, msg: Float32MultiArray):  # Function to read data from guidance
+        self.guidance_values = msg.data
 
 
 #---------------------------------------------------------------Publisher Functions---------------------------------------------------------------
 
 
-def LQR_controller(self):  # The LQR controller function
+    def LQR_controller(self):  # The LQR controller function
+        msg = Wrench()
+        
+        self.A = -self.M_inv @ self.C
+        self.B = self.M_inv
 
-    msg = Wrench()
+        # CT LQR controller from control library python
+        self.K, self.S, self.E = ct.lqr(self.A, self.B, self.Q, self.R)
+        
+        # Control input like: u = -self.K * states
+        u = self.K @ self.states
+        msg.torque.y = u[0]
+        msg.torque.z = u[1]
 
-    # CT LQR controller from control library python
-    self.K = ct.LQR(self.A, self.B, self.Q, self.R)
-    # Control input like: u = -self.K * states
-    u = np.dot(self.K, self.states)
+        #Publish the control input
+        self.publisherLQR.publish(msg)
 
-    msg.force.x = u[0]
-    msg.force.z = u[1]
-
-    msg.torque.y = u[4]
-    msg.torque.z = u[5]
-
-    self.publisher_controller.publish(msg)
-
-
-def publish_states(self):
-    msg = Float32MultiArray()
-
-    # DATA: 1 - Surge, 2 - Heave, 3 - Pitch, 4 - Yaw, 5 - Desired Surge, 6 - Desired Heave, 7 - Desired Pitch, 8 - Desired Yaw
-    msg.data = [
-        self.twist[0], self.states[2], self.states[4], self.states[5],
-        self.guidance_values[0], self.guidance_values[1],
-        self.guidance_values[2], self.guidance_values[3]
-    ]
-    self.publisher_states.publish(msg)
-
+    def publish_states(self):
+        msg = Float32MultiArray()
+        
+        # DATA: 1: pitch, 2: yaw, 3: guidance pitch, 4: guidance yaw
+        msg.data = [self.states[0], self.states[1], self.guidance_values[0], self.guidance_values[1]]
+        self.publisher_states.publish(msg)
 
 #---------------------------------------------------------------Main Function---------------------------------------------------------------
-
 
 def main(args=None):  # main function
     rclpy.init(args=args)
