@@ -81,13 +81,13 @@ class VelocityLQRNode(Node):
         Y_I = 0.0  # Augmented state cost for yaw
 
         self.Q_aug = np.block([[self.Q, np.zeros((2, 1))],
-                  [np.zeros((1, 2)), P_I]]) # Augmented state cost matrix
-        
+                               [np.zeros((1, 2)),
+                                P_I]])  # Augmented state cost matrix
+
         self.z = 0.0
 
         # State vector 1. pitch, 2. yaw
         self.states = np.array([0, 0])
-
 
 #---------------------------------------------------------------Callback Functions---------------------------------------------------------------
 
@@ -110,8 +110,9 @@ class VelocityLQRNode(Node):
 
         # Coriolis matrix
         #self.C = calculate_coriolis_matrix(self, msg.twist.twist.angular.x, msg.twist.twist.angular.z)
-        
-        self.C = calculate_coriolis_matrix(self, 1.0, 1.0) # TEMPORARY linearization of the coriolis matrix
+
+        self.C = calculate_coriolis_matrix(
+            self, 1.0, 1.0)  # TEMPORARY linearization of the coriolis matrix
         self.A = -self.M_inv @ self.C
         self.B = self.M_inv
 
