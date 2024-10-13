@@ -3,4 +3,4 @@ Has the ability to display data live in real time
 OBS!: Make sure the Acoustics Interface Node is running before starting acoustics recording node, otherwise you will be recording nothing :P
 
 Use utilities/display_acoustics_data_live.py to display data in real time while it is being saved into the .csv file through the ROS2 node
-(Verry cool to look at, would recoment ;DDD)
+(Very cool to look at, would recoment ;DDD)

@@ -2,7 +2,7 @@ name: Publish Docker image to ghcr
 
 on:
   push:
-    branches: [ development ]
+    branches: [development]
 
 env:
   REGISTRY: ghcr.io
@@ -18,32 +18,32 @@ jobs:
     steps:
       - name: Checkout own repository
         uses: actions/checkout@v3
-        
+
       # vortex_msgs needs to be in the same location as the rest of the vortex-auv packages
       - name: Checkout vortex_msgs
         uses: actions/checkout@v3
         with:
-          repository: 'vortexntnu/vortex-msgs'
-          path: './vortex-msgs'  
+          repository: "vortexntnu/vortex-msgs"
+          path: "./vortex-msgs"
       - name: Move vortex_msgs
         run: mv ./vortex-msgs ../vortex-msgs
-        
-      # robot_localization needs to be in the same location as the rest of the vortex-auv packages  
+
+      # robot_localization needs to be in the same location as the rest of the vortex-auv packages
       - name: Checkout robot_localization
         uses: actions/checkout@v3
         with:
-          repository: 'vortexntnu/robot_localization'
-          path: './robot_localization'   
+          repository: "vortexntnu/robot_localization"
+          path: "./robot_localization"
       - name: Move robot_localization
         run: mv ./robot_localization ../robot_localization
-        
+
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38

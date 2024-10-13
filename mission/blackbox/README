@@ -9,9 +9,9 @@ Logs data of all the important topics such as:
 /pwm
 
 
-## Service file bootup
+## Service file boot-up
 
-To start the blackbox loging automaticaly every time on bootup just run this command:
+To start the blackbox logging automatically every time on boot-up just run this command:
 ```
 ./vortex-auv/add_service_files_to_bootup_sequence.sh
 ```

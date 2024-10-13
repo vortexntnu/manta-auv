@@ -18,71 +18,130 @@
 #
 
 physical:
-  weight: 18.8    #kg
-  buoyancy: 18.8  #kg 
+  weight: 18.8 #kg
+  buoyancy: 18.8 #kg
   center_of_mass: [0, 0, 0]
   center_of_buoyancy: [0, 0, 0]
   drag_coefficients: [80, 80, 204, 1, 1, 1]
   thruster_layout:
-    [[-0.70711, 0.70711, 0],
-     [ 0.00000, 0.00000, 1],
-     [ 0.00000, 0.00000, 1],
-     [-0.70711,-0.70711, 0],
-     [ 0.70711,-0.70711, 0],
-     [ 0.00000, 0.00000, 1],
-     [ 0.00000, 0.00000, 1],
-     [ 0.70711, 0.70711, 0]]
+    [
+      [-0.70711, 0.70711, 0],
+      [0.00000, 0.00000, 1],
+      [0.00000, 0.00000, 1],
+      [-0.70711, -0.70711, 0],
+      [0.70711, -0.70711, 0],
+      [0.00000, 0.00000, 1],
+      [0.00000, 0.00000, 1],
+      [0.70711, 0.70711, 0],
+    ]
   thruster_positions:
-    [[ 0.20506,  0.20506, 0],
-     [ 0.12070,  0.12070, 0],
-     [ 0.12070, -0.12070, 0],
-     [ 0.20506, -0.20506, 0],
-     [-0.20506, -0.20506, 0],
-     [-0.12070, -0.12070, 0],
-     [-0.12070,  0.12070, 0],
-     [-0.20506,  0.20506, 0]]
+    [
+      [0.20506, 0.20506, 0],
+      [0.12070, 0.12070, 0],
+      [0.12070, -0.12070, 0],
+      [0.20506, -0.20506, 0],
+      [-0.20506, -0.20506, 0],
+      [-0.12070, -0.12070, 0],
+      [-0.12070, 0.12070, 0],
+      [-0.20506, 0.20506, 0],
+    ]
 
 propulsion:
   dofs:
     num: 6
     which:
       surge: true
-      sway:  true
+      sway: true
       heave: true
-      roll:  true
+      roll: true
       pitch: true
-      yaw:   true
+      yaw: true
   thrusters:
     num: 8
     map: [0, 1, 2, 3, 4, 5, 6, 7]
     direction: [1, 1, 1, 1, 1, -1, 1, 1]
-    configuration_matrix:
-      [[ 0.70711,  0.00000,  0.00000, -0.70711, -0.70711,  0.00000,  0.00000, 0.70711], # Surge
-       [ 0.70711,  0.00000,  0.00000,  0.70711, -0.70711,  0.00000,  0.00000,-0.70711], # Sway
-       [ 0.00000, -1.00000, -1.00000,  0.00000,  0.00000, -1.00000, -1.00000, 0.00000], # Heave
-       [ 0.00000,  0.12000,  0.12000,  0.00000,  0.00000, -0.12000, -0.12000, 0.00000], # Roll
-       [ 0.00000,  0.12000, -0.12000,  0.00000,  0.00000, -0.12000,  0.12000, 0.00000], # Pitch
-       [ 0.29000, -0.00000, -0.00000, -0.29000,  0.29000,  0.00000,  0.00000,-0.29000]] # Yaw
+    configuration_matrix: [
+        [
+          0.70711,
+          0.00000,
+          0.00000,
+          -0.70711,
+          -0.70711,
+          0.00000,
+          0.00000,
+          0.70711,
+        ], # Surge
+        [
+          0.70711,
+          0.00000,
+          0.00000,
+          0.70711,
+          -0.70711,
+          0.00000,
+          0.00000,
+          -0.70711,
+        ], # Sway
+        [
+          0.00000,
+          -1.00000,
+          -1.00000,
+          0.00000,
+          0.00000,
+          -1.00000,
+          -1.00000,
+          0.00000,
+        ], # Heave
+        [
+          0.00000,
+          0.12000,
+          0.12000,
+          0.00000,
+          0.00000,
+          -0.12000,
+          -0.12000,
+          0.00000,
+        ], # Roll
+        [
+          0.00000,
+          0.12000,
+          -0.12000,
+          0.00000,
+          0.00000,
+          -0.12000,
+          0.12000,
+          0.00000,
+        ], # Pitch
+        [
+          0.29000,
+          -0.00000,
+          -0.00000,
+          -0.29000,
+          0.29000,
+          0.00000,
+          0.00000,
+          -0.29000,
+        ],
+      ] # Yaw
 
     rate_of_change:
       max: 1 # Maximum rate of change in newton per second for a thruster
     characteristics: # The relationship between thrust in newton and the width in microseconds of the PWM signal to the ESCs
       thrust: [-12.0, -0.0001, 0.0001, 12.0]
-      pulse_width: [ 1300,   1475,  1525, 1700]
-    offset: [-0.20,  1.00,  1.00, -0.35, -0.20,  1.00,  1.00, -0.35]
+      pulse_width: [1300, 1475, 1525, 1700]
+    offset: [-0.20, 1.00, 1.00, -0.35, -0.20, 1.00, 1.00, -0.35]
 
   command:
     wrench:
-      max:     [33.9, 33.9, 48.0, 7.6, 3.2, 9.9]
-      scaling: [ 0.4,  0.4,  0.6, 0.3, 0.7, 0.4]
+      max: [33.9, 33.9, 48.0, 7.6, 3.2, 9.9]
+      scaling: [0.4, 0.4, 0.6, 0.3, 0.7, 0.4]
 
 controllers:
   dp:
     circleOfAcceptance: 0.10
     frequency: 40 # THIS SHOULD BE 40Hz for the controller to perform good. This is because the built in reference model will work 2x faster as if the controller ran at 20Hz
-    velocity_gain: 3.5   #0.4
-    position_gain: 30.5   #5.0
-    attitude_gain: 1.3  #2.5
+    velocity_gain: 3.5 #0.4
+    position_gain: 30.5 #5.0
+    attitude_gain: 1.3 #2.5
     integral_gain: 0.024 #0.3
   los_controller:
     PID:
@@ -91,20 +150,20 @@ controllers:
       d: 3.5
       sat: 3.0
     backstepping:
-      c:  3.75
+      c: 3.75
       k1: 45.0
       k2: 28.0
       k3: 10.5
-      
+
 guidance:
   LOS:
     delta: 0.7
-      
-computer: 'odroid'
 
-torpedos:       # TODO: decide what pins to use for torpedo
-  left_pin: 23  # both given in BCM scheme
-  right_pin: 24 
+computer: "odroid"
+
+torpedoes: # TODO: decide what pins to use for torpedo
+  left_pin: 23 # both given in BCM scheme
+  right_pin: 24
 
 joystick:
   scaling:

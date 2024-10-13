@@ -23,26 +23,27 @@ physical:
   mass_kg: 15
   displacement_m3: 0.015
   center_of_mass: [0, 0, -0.15]
-  center_of_buoyancy: [0, 0,  0.10]
+  center_of_buoyancy: [0, 0, 0.10]
 
 propulsion:
   dofs:
     num: 5
     which:
       surge: true
-      sway:  true
+      sway: true
       heave: true
-      roll:  false
+      roll: false
       pitch: true
-      yaw:   true
+      yaw: true
   thrusters:
     num: 6
-    configuration_matrix:
-      [[ 0.7071,  0.7071, -0.7071, -0.7071,     0.0,    0.0], # Surge
-       [ 0.7071, -0.7071, -0.7071,  0.7071,     0.0,    0.0], # Sway
-       [    0.0,     0.0,     0.0,     0.0,     1.0,    1.0], # Heave
-       [-0.0467, -0.0467,  0.0467,  0.0467, -0.1600, 0.1600], # Pitch
-       [ 0.2143, -0.2143,  0.2143, -0.2143,     0.0,    0.0]] # Yaw
+    configuration_matrix: [
+        [0.7071, 0.7071, -0.7071, -0.7071, 0.0, 0.0], # Surge
+        [0.7071, -0.7071, -0.7071, 0.7071, 0.0, 0.0], # Sway
+        [0.0, 0.0, 0.0, 0.0, 1.0, 1.0], # Heave
+        [-0.0467, -0.0467, 0.0467, 0.0467, -0.1600, 0.1600], # Pitch
+        [0.2143, -0.2143, 0.2143, -0.2143, 0.0, 0.0],
+      ] # Yaw
   command:
     wrench:
       max: [69.85, 69.85, 49.39, 0, 5, 7] # 5 & 7 are rough estimates

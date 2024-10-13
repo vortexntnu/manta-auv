@@ -1,0 +1,72 @@
+name: Build and Test
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install ROS 2 Humble
+        run: |
+          sudo apt update
+          sudo apt install -y curl gnupg lsb-release
+
+          # Add the ROS 2 GPG key
+          sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+          # Add the ROS 2 repository
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+          sudo apt update
+
+          # Install ROS 2 Humble desktop version
+          sudo apt install -y ros-humble-desktop
+
+      - name: Install Build Tools and Dependencies
+        run: |
+          sudo apt install -y python3-colcon-common-extensions python3-rosdep
+
+          # Initialize rosdep
+          sudo rosdep init
+          rosdep update
+
+      - name: Set up ROS 2 Workspace
+        run: |
+          mkdir -p ~/ros2_ws/src
+          cd ~/ros2_ws/src
+
+          # Copy the repository code to the workspace src folder
+          cp -r $GITHUB_WORKSPACE/* .
+
+          # Clone vortex-msgs repository
+          git clone https://github.com/vortexntnu/vortex-msgs.git
+
+          # Go back to workspace root
+          cd ~/ros2_ws
+
+      - name: Install Package Dependencies with rosdep
+        run: |
+          source /opt/ros/humble/setup.bash
+          cd ~/ros2_ws
+          rosdep install --from-paths src --ignore-src -r -y
+
+      - name: Build ROS 2 Workspace
+        run: |
+          source /opt/ros/humble/setup.bash
+          cd ~/ros2_ws
+          colcon build --event-handlers console_cohesion+
+
+      - name: Run Tests
+        run: |
+          source /opt/ros/humble/setup.bash
+          cd ~/ros2_ws
+          colcon test --event-handlers console_direct+
+
+      - name: Test Results Summary
+        run: |
+          cd ~/ros2_ws
+          colcon test-result --verbose

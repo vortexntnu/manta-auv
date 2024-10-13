@@ -3,7 +3,7 @@
 <package format="3">
   <name>blackbox</name>
   <version>1.0.0</version>
-  <description>Logs all ROS2 data and other internal statuses to a data file for use in analizing data latern</description>
+  <description>Logs all ROS2 data and other internal statuses to a data file for use in analyzing data later</description>
   <maintainer email="rose.j.kapps@gmail.com">vortex</maintainer>
   <license>MIT</license>
 

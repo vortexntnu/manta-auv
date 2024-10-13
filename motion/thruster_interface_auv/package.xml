@@ -3,12 +3,12 @@
 <package format="3">
   <name>thruster_interface_auv</name>
   <version>1.0.0</version>
-  <description>Thruster interface to controll thrusters through PCA9685 Module</description>
+  <description>Thruster interface to control thrusters through PCA9685 Module</description>
   <maintainer email="vortex.git@vortexntnu.no">vortex</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake_python</buildtool_depend>
-  
+
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
   <depend>vortex_msgs</depend>

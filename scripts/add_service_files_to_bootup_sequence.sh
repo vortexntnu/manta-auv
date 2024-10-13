@@ -22,7 +22,7 @@ cd $SCRIPT_DIR
 
 
 # Setup ----------
-echo "Seting up .service files..."
+echo "Setting up .service files..."
 # Copy the .service files to current directory
 cp $SERVICE_FILE_PATH_LCD$SERVICE_FILE_NAME_LCD $SERVICE_FILE_NAME_LCD # LCD
 cp $SERVICE_FILE_PATH_INTERNAL_STATUS_AUV$SERVICE_FILE_NAME_INTERNAL_STATUS_AUV $SERVICE_FILE_NAME_INTERNAL_STATUS_AUV # Internal Status
@@ -54,7 +54,7 @@ rm $SERVICE_FILE_NAME_LCD # LCD
 rm $SERVICE_FILE_NAME_INTERNAL_STATUS_AUV # Internal Status
 rm $SERVICE_FILE_NAME_BLACKBOX # Blackbox
 
-# Change permision of the .service file
+# Change permission of the .service file
 sudo chmod 777 $SYSTEMD_PATH$SERVICE_FILE_NAME_LCD # LCD
 sudo chmod 777 $SYSTEMD_PATH$SERVICE_FILE_NAME_INTERNAL_STATUS_AUV # Internal Status
 sudo chmod 777 $SYSTEMD_PATH$SERVICE_FILE_NAME_BLACKBOX # Blackbox

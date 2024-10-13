@@ -1,0 +1,57 @@
+repos:
+  # Formatters and Code Fixers
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      # Fix end-of-file newlines
+      - id: end-of-file-fixer
+      # Remove trailing whitespaces
+      - id: trailing-whitespace
+      # Fix byte order marker (BOM) issues
+      - id: fix-byte-order-marker
+      # Ensure consistent line endings
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  # Import Sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+
+  # Code Formatters
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v19.1.0
+    hooks:
+      - id: clang-format
+        args: [--style=file]
+
+  # Spell Checking
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        args: ['--write-changes']
+
+  # Linters and Static Analysis Tools
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        args: ["--explicit-package-bases"]
+
+  - repo: https://github.com/PyCQA/pylint
+    rev: v3.3.1
+    hooks:
+      - id: pylint
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        args: ["--severity-level", "medium"]

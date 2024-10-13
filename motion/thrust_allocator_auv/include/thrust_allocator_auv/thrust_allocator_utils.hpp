@@ -64,7 +64,7 @@ inline Eigen::MatrixXd calculate_thrust_allocation_matrix(
 inline Eigen::MatrixXd calculate_right_pseudoinverse(const Eigen::MatrixXd &T) {
   Eigen::MatrixXd pseudoinverse = T.transpose() * (T * T.transpose()).inverse();
   if (is_invalid_matrix(pseudoinverse)) {
-    throw std::runtime_error("Invalid Psuedoinverse Calculated");
+    throw std::runtime_error("Invalid Pseudoinverse Calculated");
   }
   return pseudoinverse;
 }

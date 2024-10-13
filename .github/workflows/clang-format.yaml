@@ -1,0 +1,33 @@
+name: Clang-Format Code Style Check
+
+on: [pull_request]
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Run clang-format check
+        run: |
+          # Find all C/C++ source and header files
+          find . -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.cc' -o -name '*.cxx' -o -name '*.h' -o -name '*.hpp' -o -name '*.hh' -o -name '*.hxx' \) -print0 | xargs -0 clang-format -i
+
+          # Check if any files were modified
+          if [[ $(git status --porcelain) ]]; then
+            echo "Code is not properly formatted. Please run clang-format."
+            echo "Modified files:"
+            git status --porcelain
+            echo "Differences:"
+            git --no-pager diff
+            exit 1
+          else
+            echo "All code is properly formatted."
+          fi

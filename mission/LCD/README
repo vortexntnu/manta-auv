@@ -1,8 +1,8 @@
 # LCD Screen Code
-This is the code for the on board LCD screen to show status of different things withouth geting inside the RPI directly, very usefull for hardware people to trouble shoot stuff
+This is the code for the on board LCD screen to show status of different things without getting inside the RPI directly, very useful for hardware people to trouble shoot stuff
 
 # LCD on startup
-There is a startup scipt that should run every time. If it doesnet try going to:
+There is a startup script that should run every time. If it doesnet try going to:
 vortex-auv/scripts/
-and execute script that adds our LCD screen srit into the bootup sequence:
+and execute script that adds our LCD screen srit into the boot-up sequence:
 ./vortex-auv/add_service_files_to_bootup_sequence.sh

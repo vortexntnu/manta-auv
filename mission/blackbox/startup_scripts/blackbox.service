@@ -5,7 +5,7 @@ After=network.target
 [Service]
 # Use the wrapper script for ExecStart
 # DONT CHANGE THIS LINE!!!!
-# Use ./vortex-auv/add_service_files_to_bootup_sequence.sh to automaticaly set everything up
+# Use ./vortex-auv/add_service_files_to_bootup_sequence.sh to automatically set everything up
 ExecStart=/bin/bash '<pathToThisFile>blackbox.sh'
 WorkingDirectory=/home/vortex/
 StandardOutput=journal+console

@@ -1,4 +1,4 @@
-# Internal Status 
+# Internal Status
 
 This package contains a library which allows us to get current and voltage values from the Power Sense Module (PSM), and a ros node which publishes this data to the whole ROS environment.
 
@@ -13,10 +13,6 @@ The I2C address is 0X69.
 ## PSM node
 
 This ros node just publishes the current and voltage data we get from the lib to the entire ROS environment.
-### Publishes to 
+### Publishes to
 * /asv/power_sense_module/current for the current data [A]
 * /asv/power_sense_module/voltage for the voltage data [V]
-
-
-
-

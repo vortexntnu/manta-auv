@@ -1,6 +1,6 @@
 # This file defines parameters specific to Beluga
 #
-# When looking at the AUV from above, the thruster placement is:   
+# When looking at the AUV from above, the thruster placement is:
 #
 #        front
 #       |======|
@@ -15,42 +15,95 @@
 #
 
 physical:
-  weight: 35.0  #24.00     # kg
+  weight: 35.0 #24.00     # kg
   buoyancy: 36.6 #37.522  #25    # kg (pho*V)
-  center_of_mass: [0.0, 0.0, -0.08]        # m (x,y,z)
-  center_of_buoyancy: [0.0, 0.0, 0.5]   # m (x,y,z)
-
+  center_of_mass: [0.0, 0.0, -0.08] # m (x,y,z)
+  center_of_buoyancy: [0.0, 0.0, 0.5] # m (x,y,z)
 
 propulsion:
   dofs:
     num: 6
     which:
       surge: true
-      sway:  true
+      sway: true
       heave: true
-      roll:  true
+      roll: true
       pitch: true
-      yaw:   true
+      yaw: true
   thrusters:
     thrusters_operational_voltage_range: [14.2, 17.0] # Volts # If less or more than set Voltage -> thrusters shut down
 
     num: 8
-    configuration_matrix:
+    configuration_matrix: [
+        [
+          0.70711,
+          0.00000,
+          0.00000,
+          0.70711,
+          0.70711,
+          0.00000,
+          0.00000,
+          0.70711,
+        ], # Surge
+        [
+          0.70711,
+          0.00000,
+          0.00000,
+          -0.70711,
+          0.70711,
+          0.00000,
+          0.00000,
+          -0.70711,
+        ], # Sway
+        [
+          0.00000,
+          1.00000,
+          1.00000,
+          0.00000,
+          0.00000,
+          1.00000,
+          1.00000,
+          0.00000,
+        ], # Heave
 
-      [[ 0.70711,  0.00000,  0.00000,  0.70711,  0.70711,  0.00000,  0.00000, 0.70711], # Surge
-       [0.70711,  0.00000,  0.00000,  -0.70711, 0.70711,  0.00000,  0.00000, -0.70711], # Sway
-       [ 0.00000,  1.00000,  1.00000,  0.00000,  0.00000,  1.00000,  1.00000, 0.00000], # Heave
-
-       [ 0.00000, -0.20600, -0.20600,  0.00000,  0.00000, 0.20600,  0.20600,  0.00000 ], # Roll
-       [ 0.00000, -0.09600,  0.09600,  0.00000,  0.00000, 0.09600, -0.09600,  0.00000 ], # Pitch 
-       [0.30000, 0.00000,  0.00000,  0.30000,  -0.30000,  0.00000,  0.00000, -0.30000 ]] # Yaw
+        [
+          0.00000,
+          -0.20600,
+          -0.20600,
+          0.00000,
+          0.00000,
+          0.20600,
+          0.20600,
+          0.00000,
+        ], # Roll
+        [
+          0.00000,
+          -0.09600,
+          0.09600,
+          0.00000,
+          0.00000,
+          0.09600,
+          -0.09600,
+          0.00000,
+        ], # Pitch
+        [
+          0.30000,
+          0.00000,
+          0.00000,
+          0.30000,
+          -0.30000,
+          0.00000,
+          0.00000,
+          -0.30000,
+        ],
+      ] # Yaw
 
     rate_of_change:
       max: 1 # Maximum rate of change in newton per second for a thruster
-    map:       [  4,  6,  7,  0,  3,  1,  2,  5 ] # [ 0, 1, 2, 3, 4, 5, 6, 7 ]  
-    direction: [  1, -1,  1,  1, -1,  1,  1, -1 ]
-    offset:    [ 80, 80, 80, 80, 80, 80, 80, 80 ] # Offset IN PWM -400 to 400 # Offset moves where the thrust is at rest
-    thrust_range: [-0.7, 0.7] # range in percentage -1.0 to 1.0 # NOTE!: thrust_range moves with the offset, if the offset is too big e.g., ± ~400 the thrust range will go out of bounds 
+    map: [4, 6, 7, 0, 3, 1, 2, 5] # [ 0, 1, 2, 3, 4, 5, 6, 7 ]
+    direction: [1, -1, 1, 1, -1, 1, 1, -1]
+    offset: [80, 80, 80, 80, 80, 80, 80, 80] # Offset IN PWM -400 to 400 # Offset moves where the thrust is at rest
+    thrust_range: [-0.7, 0.7] # range in percentage -1.0 to 1.0 # NOTE!: thrust_range moves with the offset, if the offset is too big e.g., ± ~400 the thrust range will go out of bounds
 
 guidance:
   dp:
@@ -62,19 +115,18 @@ guidance:
     delta: 0.7
     odom_topic: "/odometry/filtered"
     action_server: "/guidance_interface/los_server"
-  vel: 
+  vel:
     rate: 20
   joy:
     thrust_topic: "/thrust/joy"
-  
 
 controllers:
   dp:
     thrust_topic: "/thrust/dp"
     odometry_topic: "/odometry/filtered"
-    velocity_gain: 1.0    # lower (1.0) is good when using slightly noisy state estimates  
-    position_gain: 35.0 
-    attitude_gain: 7.5  
+    velocity_gain: 1.0 # lower (1.0) is good when using slightly noisy state estimates
+    position_gain: 35.0
+    attitude_gain: 7.5
     integral_gain: 0.065
   los_controller: # Note: Not loaded by the backstepping/pid controllers yet! Make sure to do this after tuning with dyn. reconf.
     PID:
@@ -83,7 +135,7 @@ controllers:
       d: 3.5
       sat: 40.0
     backstepping:
-      c:  0.5
+      c: 0.5
       k1: 25.0
       k2: 10.0
       k3: 10.0
@@ -97,20 +149,20 @@ controllers:
     I_gains: [1, 1, 2.5, 1.5, 0.015, 0.015]
     D_gains: [0.01, 0.01, 0.01, 0.12, 0.03, 0.03]
     F_gains: [50, 75, 75, 50, 10, 10]
-    integral_windup_limit: 10        # in newton
-    setpoint_range: 0.5             # max distance from current point to setpoint
-    max_output_ramp_rate: 1         # in newton per cycle
+    integral_windup_limit: 10 # in newton
+    setpoint_range: 0.5 # max distance from current point to setpoint
+    max_output_ramp_rate: 1 # in newton per cycle
   vtf:
     odometry_topic: "/odometry/filtered"
     sphere_of_acceptence: 0.2
     control_input_saturation_limits: [-10.5, 10.5]
-    control_forces_weights: [0.1, 0.1, 0.1, 10, 10, 1] # Weigths for what DOF is prioritized when allocation control forces. Leave 
-    control_bandwidth: [0.6, 1, 0.6, 0.6, 0.6, 0.6]   # Tune the PID control bandwidths for [surge, sway, heave, roll, pitch, yaw]. NB! roll and pitch are redundant
+    control_forces_weights: [0.1, 0.1, 0.1, 10, 10, 1] # Weights for what DOF is prioritized when allocation control forces. Leave
+    control_bandwidth: [0.6, 1, 0.6, 0.6, 0.6, 0.6] # Tune the PID control bandwidths for [surge, sway, heave, roll, pitch, yaw]. NB! roll and pitch are redundant
     relative_damping_ratio: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # Leave
     absolute_relative_velocity_limit: 0.5 # Leave
-    reference_model_control_bandwidth_gain: 0.5 # <= 1 # Leave 
+    reference_model_control_bandwidth_gain: 0.5 # <= 1 # Leave
     reference_model_control_input_saturation_limit_gain: 0.8 # <= 1 Leave
-    virtual_target_controller_bandwidths: [1, 1, 0.75, 1, 1, 1.5]  # Tune the path following precision for [surge, sway, heave, roll, pitch, yaw]  NB! roll and pitch are redundant. Higher values gives better precision
+    virtual_target_controller_bandwidths: [1, 1, 0.75, 1, 1, 1.5] # Tune the path following precision for [surge, sway, heave, roll, pitch, yaw]  NB! roll and pitch are redundant. Higher values gives better precision
     virtual_target_along_track_speed_saturation_limits: [-0.2, 0.2] # <= 1 Speed saturation limits for the virtual target along the path
     virtual_target_control_input_saturation_limit_gain: 0.8 # <= 1 Leave
     publish_rate: 20 # The node frequency
@@ -119,23 +171,27 @@ controllers:
       first_order_time_constant: 0.2
       rotor_constant: 0.00000364
       positions: # w.r.t. ENU
-        [[  0.238, -0.220,  0.065],
-        [  0.120, -0.220,  0.065],
-        [ -0.120, -0.220,  0.065],
-        [ -0.240, -0.220,  0.065],
-        [ -0.240,  0.220,  0.065],
-        [ -0.120,  0.220,  0.065],
-        [  0.120,  0.220,  0.065],
-        [  0.238,  0.220,  0.065]]
+        [
+          [0.238, -0.220, 0.065],
+          [0.120, -0.220, 0.065],
+          [-0.120, -0.220, 0.065],
+          [-0.240, -0.220, 0.065],
+          [-0.240, 0.220, 0.065],
+          [-0.120, 0.220, 0.065],
+          [0.120, 0.220, 0.065],
+          [0.238, 0.220, 0.065],
+        ]
       orientations: # w.r.t. ENU
-        [[ 0,      0, -2.356],
-        [ 0, -1.571,      0],
-        [ 0, -1.571,      0],
-        [ 0,      0, -0.785],
-        [ 0,      0,  0.785],
-        [ 0, -1.571,      0],
-        [ 0, -1.571,      0],
-        [ 0,      0,  2.356]]
+        [
+          [0, 0, -2.356],
+          [0, -1.571, 0],
+          [0, -1.571, 0],
+          [0, 0, -0.785],
+          [0, 0, 0.785],
+          [0, -1.571, 0],
+          [0, -1.571, 0],
+          [0, 0, 2.356],
+        ]
 
     model_parameters:
       mass: 25.4 # kg
@@ -143,16 +199,14 @@ controllers:
       center_of_mass: [0, 0, 0] # w.r.t. ENU
       center_of_buoyancy: [0, 0, 0.026] # w.r.t. ENU
       inertia: # Inertia about center of mass
-        [[ 0.5, 0, 0],
-        [ 0, 1.1, 0],
-        [ 0, 0, 1.2]]
+        [[0.5, 0, 0], [0, 1.1, 0], [0, 0, 1.2]]
       water_density: 997
       M_A: [20, 40, 50, 0.5, 2, 2] # Added mass
       D: [-20, -40, -50, -3, -10, -12] # Linear damping
 
 thrust:
   thrust_topic: "/thrust/desired_forces"
-        
+
 joystick:
   scaling:
     surge: 60
@@ -161,7 +215,6 @@ joystick:
     roll: 35
     pitch: -30
     yaw: 20
-
 
 fsm:
   landmark_topic: "/fsm/state"
@@ -175,7 +228,7 @@ fsm:
 
 battery:
   thresholds:
-    warning: 14.5  # Volts
+    warning: 14.5 # Volts
     critical: 13.5 # Volts
   system:
     interval: 0.05 # seconds
@@ -184,20 +237,20 @@ battery:
     interval: 10
     path: "/sys/bus/i2c/drivers/ina3221x/1-0040/iio:device0/in_voltage0_input" # Path to monitor
   logging:
-    interval: 10   # Seconds
+    interval: 10 # Seconds
 
 pressure:
-  thresholds: 
+  thresholds:
     critical: 1013.25 # hPa
   system:
     interval: 0.5 # seconds
-  loger:
+  logger:
     interval: 10 # seconds
 
 temperature:
   logging:
-    interval: 10    # Seconds
-      
+    interval: 10 # Seconds
+
 i2c:
   pca9685:
     address: 0x40
@@ -209,7 +262,7 @@ i2c:
 
 pca9685:
   pwm:
-    bits_per_period: 4095 
+    bits_per_period: 4095
     frequency: 50.0
     frequency_measured: 50 # 51.6 is the former value, but we dont know why
 
@@ -229,12 +282,12 @@ ping360_node:
   speedOfSound: 1500
   queueSize: 1
   threshold: 100
-  enableImageTopic: True 
-  enableScanTopic: True 
-  enableDataTopic: True 
-  maxAngle: 400 
-  minAngle: 0 
-  oscillate: False 
+  enableImageTopic: True
+  enableScanTopic: True
+  enableDataTopic: True
+  maxAngle: 400
+  minAngle: 0
+  oscillate: False
 
 torpedo:
   gpio_pin: 15

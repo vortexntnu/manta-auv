@@ -1,6 +1,6 @@
 # This file defines parameters specific to (Insert Name of New AUV).
 #
-# When looking at the AUV from above, the thruster placement is:   
+# When looking at the AUV from above, the thruster placement is:
 #
 #        front
 #       |======|
@@ -28,56 +28,109 @@
         num: 8
         min: -100
         max: 100
-        thruster_force_direction:
-          [ 0.70711,  0.00000,  0.00000,  0.70711,  0.70711,  0.00000,  0.00000,  0.70711,  # Surge
-           -0.70711,  0.00000,  0.00000,  0.70711, -0.70711,  0.00000,  0.00000,  0.70711,  # Sway
-            0.00000,  1.00000,  1.00000,  0.00000,  0.00000,  1.00000,  1.00000,  0.00000 ] # Heave
-        thruster_position:
-          [ 0.41500,  0.28400, -0.31800, -0.44900, -0.44900, -0.31800,  0.28400,  0.41500,  # x-position of thrusters
-            0.16900,  0.16300,  0.16300,  0.16900, -0.16900, -0.16300, -0.16300, -0.16900,  # y-position of thrusters
-            0.07600,  0.08200,  0.08200,  0.07600,  0.07600,  0.08200,  0.08200,  0.07600 ] # z-position of thrusters         
+        thruster_force_direction: [
+            0.70711,
+            0.00000,
+            0.00000,
+            0.70711,
+            0.70711,
+            0.00000,
+            0.00000,
+            0.70711, # Surge
+            -0.70711,
+            0.00000,
+            0.00000,
+            0.70711,
+            -0.70711,
+            0.00000,
+            0.00000,
+            0.70711, # Sway
+            0.00000,
+            1.00000,
+            1.00000,
+            0.00000,
+            0.00000,
+            1.00000,
+            1.00000,
+            0.00000,
+          ] # Heave
+        thruster_position: [
+            0.41500,
+            0.28400,
+            -0.31800,
+            -0.44900,
+            -0.44900,
+            -0.31800,
+            0.28400,
+            0.41500, # x-position of thrusters
+            0.16900,
+            0.16300,
+            0.16300,
+            0.16900,
+            -0.16900,
+            -0.16300,
+            -0.16300,
+            -0.16900, # y-position of thrusters
+            0.07600,
+            0.08200,
+            0.08200,
+            0.07600,
+            0.07600,
+            0.08200,
+            0.08200,
+            0.07600,
+          ] # z-position of thrusters
 
         rate_of_change:
           max: 1 # Maximum rate of change in newton per second for a thruster
-      
+
         thrust_update_rate: 10.0 # [Hz]
-        
+
         thruster_to_pin_mapping: [0, 1, 2, 3, 4, 6, 5, 7] # I.e. if thruster_to_pin = [ 7,  6,  5,  4,  3,  2,  1,  0 ] then thruster 0 is pin 1 etc..
-        thruster_direction: [1, -1, 1, -1, 1, 1, 1, -1]  # Disclose during thruster mapping (+/- 1)
+        thruster_direction: [1, -1, 1, -1, 1, 1, 1, -1] # Disclose during thruster mapping (+/- 1)
         thruster_PWM_offset: [-28, -28, -28, -28, -28, -28, -28, -28] # Offset IN PWM -400 to 400 # Offset moves where the thrust is at rest
-        thruster_PWM_min: [1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200] # Minimum PWM value, Recomended: [1100, 1100, 1100, 1100, 1100, 1100, 1100, 1100]
-        thruster_PWM_max: [1800, 1800, 1800, 1800, 1800, 1800, 1800, 1800] # Maximum PWM value, Recomended: [1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900]
-    
+        thruster_PWM_min: [1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200] # Minimum PWM value, Recommended: [1100, 1100, 1100, 1100, 1100, 1100, 1100, 1100]
+        thruster_PWM_max: [1800, 1800, 1800, 1800, 1800, 1800, 1800, 1800] # Maximum PWM value, Recommended: [1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900]
+
     internal_status:
-      power_sense_module_read_rate: 5.0 # Readings/second, Recomended: 5.0
-      voltage_min: 14.5 # [V], Recomended: 14.5
-      voltage_max: 16.8 # [V], Recomended: 16.8
-      power_sense_module_warning_rate: 0.1 # Warnings/second in case something goes bad you have a warning, Recomended: 0.1
-      
-      pressure_read_rate: 1.0 # Readings/second, Recomended: 1.0
-      pressure_critical_level: 900.0 # [hPa] If the pressure is over this amount there might be a leakage, Recomended: <1013.25
-      pressure_warning_rate: 0.1 # Warnings/second in case something goes bad you have a warning, Recomended: 0.1
-      
-      temperature_read_rate: 0.1 # Readings/second, Recomended: 0.1
-      temperature_critical_level: 90.0 # [*C] If temperature is over this amount the electrical housing might be overheating, Recomended: 90.0
-      temperature_warning_rate: 0.1 # Warnings/second in case something goes bad you have a warning, Recomended: 0.1
-    
+      power_sense_module_read_rate: 5.0 # Readings/second, Recommended: 5.0
+      voltage_min: 14.5 # [V], Recommended: 14.5
+      voltage_max: 16.8 # [V], Recommended: 16.8
+      power_sense_module_warning_rate: 0.1 # Warnings/second in case something goes bad you have a warning, Recommended: 0.1
+
+      pressure_read_rate: 1.0 # Readings/second, Recommended: 1.0
+      pressure_critical_level: 900.0 # [hPa] If the pressure is over this amount there might be a leakage, Recommended: <1013.25
+      pressure_warning_rate: 0.1 # Warnings/second in case something goes bad you have a warning, Recommended: 0.1
+
+      temperature_read_rate: 0.1 # Readings/second, Recommended: 0.1
+      temperature_critical_level: 90.0 # [*C] If temperature is over this amount the electrical housing might be overheating, Recommended: 90.0
+      temperature_warning_rate: 0.1 # Warnings/second in case something goes bad you have a warning, Recommended: 0.1
+
     blackbox:
-      data_logging_rate: 5.0 # [logings/second], Recomended: 5.0 logings per second
-    
+      data_logging_rate: 5.0 # [loggings/second], Recommended: 5.0 loggings per second
+
     acoustics:
-      frequencies_of_interest: # MUST be 20 elements [FREQUENCY [Hz], FREQUENCY_VARIANCE [Hz]...] Recomended: Frequency 1 000 - 50 000 Hz, Variance 1 000 - 10 000 Hz
-       [10000, 1000,
-        50000, 3000,
-        0, 0,
-        0, 0,
-        0, 0,
-        0, 0,
-        0, 0,
-        0, 0,
-        0, 0,
-        0, 0]
-      data_logging_rate: 1.0 # [logings/second], Recomended: 1.0 logings per second
-
-      
-
+      frequencies_of_interest: # MUST be 20 elements [FREQUENCY [Hz], FREQUENCY_VARIANCE [Hz]...] Recommended: Frequency 1 000 - 50 000 Hz, Variance 1 000 - 10 000 Hz
+        [
+          10000,
+          1000,
+          50000,
+          3000,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+        ]
+      data_logging_rate: 1.0 # [loggings/second], Recommended: 1.0 loggings per second
