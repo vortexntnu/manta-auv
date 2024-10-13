@@ -29,21 +29,25 @@ def quaternion_to_euler_angle(w, x, y, z):
 
     return X, Y, Z
 
+
 # A function to convert the angle to the smallest signed angle
 def ssa(angle):
     if angle > np.pi:
         angle -= 2 * np.pi
     elif angle < -np.pi:
         angle += 2 * np.pi
-    return angle    
+    return angle
 
-invalid_force = 95.0  # Invalid force value
 
 #  Function to calculate the coriolis matrix
-def calculate_coriolis_matrix(pitch_rate, yaw_rate, sway, heave):
-    return np.array([[0.2,-30*sway*0.01, -30*heave*0.01], [30*sway*0.01, 0, 1.629 * pitch_rate], [30*heave*0.01 ,1.769 * yaw_rate, 0]])
+def calculate_coriolis_matrix(self, pitch_rate, yaw_rate, sway, heave):
+    return np.array([[0.2, -30 * sway * 0.01, -30 * heave * 0.01],
+                     [30 * sway * 0.01, 0, 1.629 * pitch_rate],
+                     [30 * heave * 0.01, 1.769 * yaw_rate, 0]])
+
 
 #----------------------------------------------------------------Controller Node----------------------------------------------------------------
+
 
 class VelocityLQRNode(Node):
 
@@ -70,12 +74,11 @@ class VelocityLQRNode(Node):
             [0.3, -np.pi / 8, -np.pi / 4, 0.0, 0.0, 0.0])  # augmented guidance values TEMPORARY
 
         # TODO: state space model, Anders showed me the chapter in the book from page 55 on for this
-        self.M = np.array([[30, 0.6, 0],
-                           [0.6, 1.629, 0],
+        self.M = np.array([[30, 0.6, 0], [0.6, 1.629, 0],
                            [0, 0, 1.769]])  # mass matrix with mass = 30kg
-        
+
         self.M_inv = np.linalg.inv(self.M)  # inverse of mass matrix
-        
+
         self.C = np.zeros((3, 3))  # Coriolis matrix
         self.A = np.eye(3)  # depending on number of states
         self.B = np.eye(3)  # depending on number of control inputs
@@ -115,7 +118,7 @@ class VelocityLQRNode(Node):
             msg.pose.pose.orientation.y, msg.pose.pose.orientation.z)
 
         self.states[0] = msg.twist.twist.linear.x
-        
+
         self.C = calculate_coriolis_matrix(
             msg.twist.twist.angular.y, msg.twist.twist.angular.z, msg.twist.twist.linear.y, msg.twist.twist.linear.z) #coriolis matrix
         
@@ -140,17 +143,26 @@ class VelocityLQRNode(Node):
         self.B = self.M_inv
 
         # Augment the A and B matrices for integrators for surge, pitch, and yaw
-        self.A_aug = np.block([[self.A, np.zeros((3, 3))], [-np.eye(3), np.zeros((3,3))]])  # Integrators added for surge, pitch, and yaw
-        self.B_aug = np.block([[self.B], [np.zeros((3, 3))]])  # Control input does not affect integrators directly
+        self.A_aug = np.block([[self.A, np.zeros(
+            (3, 3))], [-np.eye(3), np.zeros(
+                (3, 3))]])  # Integrators added for surge, pitch, and yaw
+        self.B_aug = np.block([[self.B], [np.zeros(
+            (3, 3))]])  # Control input does not affect integrators directly
 
         # CT LQR controller from control library python
         self.K, self.S, self.E = ct.lqr(self.A, self.B, self.Q, self.R)
-        self.K_aug, self.S_aug, self.E_aug = ct.lqr(self.A_aug, self.B_aug, self.Q_aug, self.R)
+        self.K_aug, self.S_aug, self.E_aug = ct.lqr(self.A_aug, self.B_aug,
+                                                    self.Q_aug, self.R)
 
-        surge_error = self.guidance_values[0] - self.states[0]  # Surge error no need for angle wrapping
-        pitch_error = ssa(self.guidance_values[1] - self.states[1])  # Apply ssa to pitch error
-        yaw_error = ssa(self.guidance_values[2] - self.states[2])    # Apply ssa to yaw error
-        
+        surge_error = self.guidance_values[0] - self.states[
+            0]  # Surge error no need for angle wrapping
+        pitch_error = ssa(self.guidance_values[1] -
+                          self.states[1])  # Apply ssa to pitch error
+        yaw_error = ssa(self.guidance_values[2] -
+                        self.states[2])  # Apply ssa to yaw error
+
+        # self.get_logger().info(f"{surge_error}, {pitch_error}, {yaw_error}")
+
         # Update the integrators for surge, pitch, and yaw
 
         if self.surge_windup == False:
@@ -168,8 +180,10 @@ class VelocityLQRNode(Node):
         else:
             self.z_yaw += 0.0
 
-         # Augmented state vector including integrators
-        u_aug = -self.K_aug @ (-surge_error, -pitch_error, -yaw_error, self.z_surge, self.z_pitch, self.z_yaw)  # Augmented control input
+        # Augmented state vector including integrators
+        u_aug = -self.K_aug @ (-surge_error, -pitch_error, -yaw_error,
+                               self.z_surge, self.z_pitch, self.z_yaw
+                               )  # Augmented control input
 
         # --------------------------------------------- SURGE ANTIWINDUP -------------------------------------------------------
         if abs(u_aug[0]) > invalid_force:
@@ -206,9 +220,10 @@ class VelocityLQRNode(Node):
 
         #Publish the control input
         self.publisherLQR.publish(msg)
-        
+
         self.get_logger().info(
-            f"Surge input: {msg.force.x} Pitch input: {msg.torque.y}, Yaw input: {msg.torque.z}")
+            f"Surge input: {msg.force.x} Pitch input: {msg.torque.y}, Yaw input: {msg.torque.z}"
+        )
 
     def publish_states(self):
         msg = Float32MultiArray()
