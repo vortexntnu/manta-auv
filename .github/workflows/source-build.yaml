@@ -1,6 +1,11 @@
-name: Trigger Reusable Source Build
+name: Source Build
 
-on: [push]
+on:
+  pull_request:
+
+  # Runs daily to check for dependency issues or flaking tests
+  schedule:
+    - cron: "0 1 * * *"
 
 jobs:
   source-build:
