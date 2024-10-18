@@ -1,0 +1,11 @@
+name: Trigger Reusable Source Build
+
+on: [push]
+
+jobs:
+  source-build:
+    uses: vortexntnu/vortex-ci/.github/workflows/reusable-source-build.yaml@main
+    with:
+      ros_distro: 'humble'
+      os_name: 'ubuntu-22.04'
+      ref: ${{ github.ref_name }}
