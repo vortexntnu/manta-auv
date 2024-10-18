@@ -1,4 +1,5 @@
 name: Semantic Versioning
+
 on:
   push:
     branches:
