@@ -16,4 +16,3 @@ jobs:
       python_version: '3.8'
       ref: ${{ github.ref_name }}
       vcs_repo_file_url: 'https://raw.githubusercontent.com/vortexntnu/vortex-auv/main/ros2.repos'
-      token: ${{ secrets.CODECOV_TOKEN }}
