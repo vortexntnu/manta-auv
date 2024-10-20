@@ -1,0 +1,17 @@
+name: Source Build
+
+on:
+  push:
+
+  workflow_dispatch:
+
+  pull_request:
+
+jobs:
+  source-build:
+    uses: vortexntnu/vortex-ci/.github/workflows/reusable-codecov-build.yaml@feat/codecov
+    with:
+      ros2_distro: 'humble'
+      os_name: 'ubuntu-22.04'
+      ref: ${{ github.ref_name }}
+      vcs_repo_file_url: 'https://raw.githubusercontent.com/vortexntnu/vortex-auv/main/ros2.repos'
