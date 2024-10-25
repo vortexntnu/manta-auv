@@ -1,5 +1,5 @@
 fixes:
-  - "ros_ws/src/*/vortex-auv::"
+  - "ros_ws/src/vortex-auv::"
 
 comment:
   layout: "header, diff, flags, components"
