@@ -7,6 +7,7 @@
 [![GitHub pull-requests](https://img.shields.io/github/issues-pr/vortexntnu/manta-auv.svg)](https://GitHub.com/vortexntnu/manta-auv/pulls)
 [![GitHub pull-requests closed](https://img.shields.io/github/issues-pr-closed/vortexntnu/manta-auv.svg)](https://GitHub.com/vortexntnu/manta-auv/pulls)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/github/vortexntnu/vortex-auv/graph/badge.svg?token=UXIGc2qG7N)](https://codecov.io/github/vortexntnu/vortex-auv)
 
 ![Banner](docs/banner_image.png)
 
