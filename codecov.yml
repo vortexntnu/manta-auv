@@ -1,21 +1,17 @@
 fixes:
-  - "ros_ws/src/*/vortex-auv/acoustics/::"
-  - "ros_ws/src/*/vortex-auv/auv_setup/::"
-  - "ros_ws/src/*/vortex-auv/mission/::"
-  - "ros_ws/src/*/vortex-auv/motion/::"
-
-
+  - "ros_ws/src/vortex-auv/::"
 comment:
-  layout: "header, diff, flags, components"
-
-coverage:
-  precision: 2
-  round: down
-
-ignore:
-  - "**/*.ipynb"
-  - docs
-  - docker
-  - binder
-  - .github
-  - .git
+  layout: "diff, flags, files"
+  behavior: default
+flags:
+  unittests:
+    paths:
+      - acoustics/acoustics_data_record
+      - acoustics/acoustics_interface
+      - auv_setup
+      - mission/blackbox
+      - mission/internal_status_auv
+      - mission/joystick_interface_auv
+      - mission/LCD
+      - motion/thrust_allocator_auv
+      - motion/thruster_interface_auv
