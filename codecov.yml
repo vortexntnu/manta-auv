@@ -12,19 +12,6 @@ coverage:
   precision: 2
   round: down
 
-flag_management:
-  individual_flags:
-    - name: vortex-auv
-      paths:
-        - vortex-auv/acoustics/
-        - vortex-auv/auv_setup/
-        - vortex-auv/mission/
-        - vortex-auv/motion/
-      statuses:
-        - type: project
-          target: auto
-          threshold: 1%
-
 ignore:
   - "**/*.ipynb"
   - docs
