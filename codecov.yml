@@ -1,5 +1,8 @@
 fixes:
-  - "ros_ws/src/*/vortex-auv/::"
+  - "ros_ws/src/*/vortex-auv/acoustics/::"
+  - "ros_ws/src/*/vortex-auv/auv_setup/::"
+  - "ros_ws/src/*/vortex-auv/mission/::"
+  - "ros_ws/src/*/vortex-auv/motion/::"
 
 
 comment:
