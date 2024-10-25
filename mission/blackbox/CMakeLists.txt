@@ -25,7 +25,7 @@ install(PROGRAMS
 )
 
 if(BUILD_TESTING)
-  ament_add_pytest_test(test_blackbox test/test_blackbox.py)
+  ament_add_pytest_test(test_blackbox tests/test_blackbox.py)
 endif()
 
 ament_package()
