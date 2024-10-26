@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import math as math
 
+import control as ct
 import numpy as np
 import rclpy
 from geometry_msgs.msg import Wrench
@@ -8,8 +9,6 @@ from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray
 from vortex_msgs.msg import LOSGuidance
-
-import control as ct
 
 
 def quaternion_to_euler_angle(w, x, y, z):
@@ -43,11 +42,13 @@ def ssa(angle):
 #  Function to calculate the coriolis matrix
 def calculate_coriolis_matrix(pitch_rate, yaw_rate, sway, heave):
     return np.array(
-        [[0.2, -30 * sway * 0.01, -30 * heave * 0.01], [30 * sway * 0.01, 0, 1.629 * pitch_rate], [30 * heave * 0.01, 1.769 * yaw_rate, 0]]
+        [[0.2, -30 * sway * 0.01, -30 * heave * 0.01],
+        [30 * sway * 0.01, 0, 1.629 * pitch_rate],
+        [30 * heave * 0.01, 1.769 * yaw_rate, 0]]
     )
 
 
-invalid_force = 95.0
+invalid_force = 99.5
 source_from_abu = True
 
 # ----------------------------------------------------------------Controller Node----------------------------------------------------------------
@@ -63,16 +64,15 @@ class VelocityLQRNode(Node):
         self.publisher_states = self.create_publisher(Float32MultiArray, "/velocity/states", 10)
 
         self.control_timer = self.create_timer(0.1, self.LQR_controller)
-        self.state_timer = self.create_timer(0.3, self.publish_states)
+        self.state_timer = self.create_timer(0.1, self.publish_states)
         self.sinusoid_timer = self.create_timer(0.1, self.timer_callback)
-        self.topic_subscriber = self.create_subscription(Odometry, "/nucleus/odom", self.nucleus_callback, 10)
+        self.topic_subscriber = self.create_subscription(Odometry, "/nucleus/odom", self.nucleus_callback, 20)
 
-        self.guidance_values = np.array([0.3, -np.pi / 8, -np.pi / 4])  # guidance values TEMPORARY
-        self.guidance_values_aug = np.array([0.3, -np.pi / 8, -np.pi / 4, 0.0, 0.0, 0.0])  # augmented guidance values TEMPORARY
+        self.guidance_values = np.array([0.3, -np.pi / 4, -np.pi / 2])  # guidance values TEMPORARY
+        self.guidance_values_aug = np.array([0.3, -np.pi / 4, -np.pi / 2, 0.0, 0.0, 0.0])  # augmented guidance values TEMPORARY
 
         # TODO: state space model, Anders showed me the chapter in the book from page 55 on for this
         self.M = np.array([[30, 0.6, 0], [0.6, 1.629, 0], [0, 0, 1.769]])  # mass matrix with mass = 30kg
-
         self.M_inv = np.linalg.inv(self.M)  # inverse of mass matrix
 
         self.C = np.zeros((3, 3))  # Coriolis matrix
@@ -83,12 +83,12 @@ class VelocityLQRNode(Node):
         self.B_aug = np.eye(6, 3)  # Augmented B matrix
 
         # LQR controller parameters
-        self.Q = np.diag([75, 175, 175])  # state cost matrix
+        self.Q = np.diag([75, 170, 170])  # state cost matrix
         self.R = np.diag([0.1, 0.3, 0.1])  # control cost matrix
 
-        self.I_surge = 0.40  # Augmented state cost for surge
-        self.I_pitch = 0.35  # Augmented state cost for pitch
-        self.I_yaw = 0.35  # Augmented state cost for yaw
+        self.I_surge = 0.35  # Augmented state cost for surge
+        self.I_pitch = 0.40  # Augmented state cost for pitch
+        self.I_yaw = 0.33  # Augmented state cost for yaw
 
         self.Q_aug = np.block(
             [[self.Q, np.zeros((3, 3))], [np.zeros((3, 3)), np.diag([self.I_surge, self.I_pitch, self.I_yaw])]]
@@ -140,7 +140,6 @@ class VelocityLQRNode(Node):
             self.guidance_values[2] = (np.pi / 2) * np.cos(self.t / 75)
             self.guidance_values_aug[2] = (np.pi / 2) * np.cos(self.t / 75)
             self.t += 1
-
     # ---------------------------------------------------------------Publisher Functions---------------------------------------------------------------
 
     def LQR_controller(self):  # The LQR controller function
@@ -154,7 +153,6 @@ class VelocityLQRNode(Node):
         self.B_aug = np.block([[self.B], [np.zeros((3, 3))]])  # Control input does not affect integrators directly
 
         # CT LQR controller from control library python
-        self.K, self.S, self.E = ct.lqr(self.A, self.B, self.Q, self.R)
         self.K_aug, self.S_aug, self.E_aug = ct.lqr(self.A_aug, self.B_aug, self.Q_aug, self.R)
 
         surge_error = self.guidance_values[0] - self.states[0]  # Surge error no need for angle wrapping

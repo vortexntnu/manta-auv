@@ -1,0 +1,13 @@
+velocity_controller_lqr:
+  ros__parameters:
+
+    R_surge_: 10.0
+    R_pitch_: 10.0
+    R_yaw_: 10.0
+
+    P_surge_: 25.0
+    P_pitch_: 100.0
+    P_yaw_: 75.0
+    I_surge_: 0.002
+    I_pitch_: 0.005
+    I_yaw_: 0.002
