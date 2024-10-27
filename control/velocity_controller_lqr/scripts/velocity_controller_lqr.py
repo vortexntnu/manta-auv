@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import math as math
 
+import control as ct
 import numpy as np
 import rclpy
 from geometry_msgs.msg import Wrench
@@ -9,14 +10,26 @@ from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray
 from vortex_msgs.msg import LOSGuidance
 
-import control as ct
 
-
-def quaternion_to_euler_angle(w, x, y, z):
-    ysqr = y * y
+def quaternion_to_euler_angle(w: float, x: float, y: float, z: float) -> tuple:
+    """
+    Function to convert quaternion to euler angles
+    args:
+    ----
+        w: float: w component of quaternion
+        x: float: x component of quaternion
+        y: float: y component of quaternion
+        z: float: z component of quaternion
+    returns:
+    --------
+        X: float: roll angle
+        Y: float: pitch angle
+        Z: float: yaw angle
+    """
+    y_square = y * y
 
     t0 = +2.0 * (w * x + y * z)
-    t1 = +1.0 - 2.0 * (x * x + ysqr)
+    t1 = +1.0 - 2.0 * (x * x + y_square)
     X = math.atan2(t0, t1)
 
     t2 = +2.0 * (w * y - z * x)
@@ -25,14 +38,21 @@ def quaternion_to_euler_angle(w, x, y, z):
     Y = math.asin(t2)
 
     t3 = +2.0 * (w * z + x * y)
-    t4 = +1.0 - 2.0 * (ysqr + z * z)
+    t4 = +1.0 - 2.0 * (y_square + z * z)
     Z = math.atan2(t3, t4)
 
     return X, Y, Z
 
-
-# A function to convert the angle to the smallest signed angle
-def ssa(angle):
+def ssa(angle: float) -> float:
+    """
+    Function to convert the angle to the smallest signed angle
+    args:
+    ----
+        angle: float: angle in radians
+    returns:
+    --------
+        angle: float: angle in radians
+    """
     if angle > np.pi:
         angle -= 2 * np.pi
     elif angle < -np.pi:
@@ -40,13 +60,31 @@ def ssa(angle):
     return angle
 
 
-#  Function to calculate the coriolis matrix
-def calculate_coriolis_matrix(pitch_rate, yaw_rate, sway, heave):
+def calculate_coriolis_matrix(pitch_rate: float, yaw_rate: float, sway: float, heave:float) -> np.array:
+    """
+    Calculates the 3x3 coriolis matrix
+    ----------------------------------- 
+        from Fossen's Handbook of Marine Craft Hydrodynamics
+    args:
+    ----
+        pitch_rate: float: pitch rate in rad/s
+        yaw_rate: float: yaw rate in rad/s
+        sway: float: sway velocity in m/s
+        heave: float: heave velocity in m/s
+    returns:
+    --------
+        C: np.array: 3x3 Coriolis Matrix
+    return: C matrix
+    """
+    
     return np.array(
-        [[0.2, -30 * sway * 0.01, -30 * heave * 0.01], [30 * sway * 0.01, 0, 1.629 * pitch_rate], [30 * heave * 0.01, 1.769 * yaw_rate, 0]]
+        [[0.2, -30 * sway * 0.01, -30 * heave * 0.01], 
+         [30 * sway * 0.01, 0, 1.629 * pitch_rate], 
+         [30 * heave * 0.01, 1.769 * yaw_rate, 0]]
     )
 
 
+# TODO make this into config file
 invalid_force = 99.5
 source_from_abu = True
 
@@ -69,30 +107,43 @@ class VelocityLQRNode(Node):
         self.guidance_values = np.array([0.3, -np.pi / 4, -np.pi / 2])  # guidance values TEMPORARY
         self.guidance_values_aug = np.array([0.3, -np.pi / 4, -np.pi / 2, 0.0, 0.0, 0.0])  # augmented guidance values TEMPORARY
 
-        # TODO: state space model, Anders showed me the chapter in the book from page 55 on for this
-        self.M = np.array([[30, 0.6, 0], [0.6, 1.629, 0], [0, 0, 1.769]])  # mass matrix with mass = 30kg
+
+        self.M = np.array([[30, 0.6, 0], 
+                           [0.6, 1.629, 0], 
+                           [0, 0, 1.769]])  # mass matrix with mass = 30kg
+        
         self.M_inv = np.linalg.inv(self.M)  # inverse of mass matrix
 
-        self.C = np.zeros((3, 3))  # Coriolis matrix
         self.A = np.eye(3)  # depending on number of states
         self.B = np.eye(3)  # depending on number of control inputs
+        self.C = np.zeros((3, 3))  # Coriolis matrix
 
         self.A_aug = np.eye(6)  # Augmented A matrix
         self.B_aug = np.eye(6, 3)  # Augmented B matrix
 
-        # LQR controller parameters
-        self.Q = np.diag([75, 165, 165])  # state cost matrix
-        self.R = np.diag([0.1, 0.3, 0.3])  # control cost matrix
+        # TODO make this into config file
+        
+        self.Q_surge = 75
+        self.Q_pitch = 165
+        self.Q_yaw = 165
+        
+        self.R_surge = 0.1
+        self.R_pitch = 0.3
+        self.R_yaw = 0.3
+        
+        self.Q = np.diag([self.Q_surge, self.Q_pitch, self.Q_yaw])  # state cost matrix
+        self.R = np.diag([self.R_surge, self.R_pitch, self.R_yaw])  # control cost matrix
 
         self.I_surge = 0.35  # Augmented state cost for surge
         self.I_pitch = 0.40  # Augmented state cost for pitch
         self.I_yaw = 0.35  # Augmented state cost for yaw
 
         self.Q_aug = np.block(
-            [[self.Q, np.zeros((3, 3))], [np.zeros((3, 3)), np.diag([self.I_surge, self.I_pitch, self.I_yaw])]]
+            [[self.Q, np.zeros((3, 3))],
+             [np.zeros((3, 3)), np.diag([self.I_surge, self.I_pitch, self.I_yaw])]]
         )  # Augmented state cost matrix
 
-        self.z_surge = 0.0
+        self.integral_error_surge = 0.0
         self.z_pitch = 0.0
         self.z_yaw = 0.0  # Augmented states for surge, pitch and yaw
 
@@ -161,9 +212,9 @@ class VelocityLQRNode(Node):
         # Update the integrators for surge, pitch, and yaw
 
         if self.surge_windup == False:
-            self.z_surge += self.I_surge * surge_error  # surge integrator
+            self.integral_error_surge += self.I_surge * surge_error  # surge integrator
         else:
-            self.z_surge += 0.0
+            self.integral_error_surge += 0.0
 
         if self.pitch_windup == False:
             self.z_pitch += self.I_pitch * pitch_error * 2  # pitch integrator
@@ -176,7 +227,7 @@ class VelocityLQRNode(Node):
             self.z_yaw += 0.0
 
         # Augmented state vector including integrators
-        u_aug = -self.K_aug @ (-surge_error, -pitch_error, -yaw_error, self.z_surge, self.z_pitch, self.z_yaw)  # Augmented control input
+        u_aug = -self.K_aug @ (-surge_error, -pitch_error, -yaw_error, self.integral_error_surge, self.z_pitch, self.z_yaw)  # Augmented control input
 
         # --------------------------------------------- SURGE ANTIWINDUP -------------------------------------------------------
         if abs(u_aug[0]) > invalid_force:
