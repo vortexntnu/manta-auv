@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import math as math
 
-import control as ct
 import numpy as np
 import rclpy
 from geometry_msgs.msg import Wrench
@@ -10,21 +9,26 @@ from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray
 from vortex_msgs.msg import LOSGuidance
 
+import control as ct
+
 
 def quaternion_to_euler_angle(w: float, x: float, y: float, z: float) -> tuple:
     """
-    Function to convert quaternion to euler angles
-    args:
+    Function to convert quaternion to euler angles.
+
+    Args:
     ----
         w: float: w component of quaternion
         x: float: x component of quaternion
         y: float: y component of quaternion
         z: float: z component of quaternion
-    returns:
-    --------
+
+    Returns:
+    -------
         X: float: roll angle
         Y: float: pitch angle
         Z: float: yaw angle
+
     """
     y_square = y * y
 
@@ -43,15 +47,19 @@ def quaternion_to_euler_angle(w: float, x: float, y: float, z: float) -> tuple:
 
     return X, Y, Z
 
+
 def ssa(angle: float) -> float:
     """
     Function to convert the angle to the smallest signed angle
-    args:
+
+    Args:
     ----
         angle: float: angle in radians
-    returns:
-    --------
+
+    Returns:
+    -------
         angle: float: angle in radians
+
     """
     if angle > np.pi:
         angle -= 2 * np.pi
@@ -60,27 +68,33 @@ def ssa(angle: float) -> float:
     return angle
 
 
-def calculate_coriolis_matrix(pitch_rate: float, yaw_rate: float, sway: float, heave:float) -> np.array:
+def calculate_coriolis_matrix(
+    pitch_rate: float, yaw_rate: float, sway: float, heave: float
+) -> np.array:
     """
     Calculates the 3x3 coriolis matrix
-    ----------------------------------- 
+    -----------------------------------
         from Fossen's Handbook of Marine Craft Hydrodynamics
-    args:
+
+    Args:
     ----
         pitch_rate: float: pitch rate in rad/s
         yaw_rate: float: yaw rate in rad/s
         sway: float: sway velocity in m/s
         heave: float: heave velocity in m/s
-    returns:
-    --------
+
+    Returns:
+    -------
         C: np.array: 3x3 Coriolis Matrix
     return: C matrix
+
     """
-    
     return np.array(
-        [[0.2, -30 * sway * 0.01, -30 * heave * 0.01], 
-         [30 * sway * 0.01, 0, 1.629 * pitch_rate], 
-         [30 * heave * 0.01, 1.769 * yaw_rate, 0]]
+        [
+            [0.2, -30 * sway * 0.01, -30 * heave * 0.01],
+            [30 * sway * 0.01, 0, 1.629 * pitch_rate],
+            [30 * heave * 0.01, 1.769 * yaw_rate, 0],
+        ]
     )
 
 
@@ -92,26 +106,34 @@ source_from_abu = True
 
 
 class VelocityLQRNode(Node):
-
     def __init__(self):
         super().__init__("input_subscriber")
-        self.nucleus_subscriber = self.create_subscription(Odometry, "/nucleus/odom", self.nucleus_callback, 20)
-        self.guidance_subscriber = self.create_subscription(LOSGuidance, "/guidance/los", self.guidance_callback, 20)
+        self.nucleus_subscriber = self.create_subscription(
+            Odometry, "/nucleus/odom", self.nucleus_callback, 20
+        )
+        self.guidance_subscriber = self.create_subscription(
+            LOSGuidance, "/guidance/los", self.guidance_callback, 20
+        )
         self.publisherLQR = self.create_publisher(Wrench, "/thrust/wrench_input", 15)
-        self.publisher_states = self.create_publisher(Float32MultiArray, "/velocity/states", 20)
+        self.publisher_states = self.create_publisher(
+            Float32MultiArray, "/velocity/states", 20
+        )
 
         self.control_timer = self.create_timer(0.1, self.LQR_controller)
         self.state_timer = self.create_timer(0.1, self.publish_states)
         self.sinusoid_timer = self.create_timer(0.1, self.timer_callback)
 
-        self.guidance_values = np.array([0.3, -np.pi / 4, -np.pi / 2])  # guidance values TEMPORARY
-        self.guidance_values_aug = np.array([0.3, -np.pi / 4, -np.pi / 2, 0.0, 0.0, 0.0])  # augmented guidance values TEMPORARY
+        self.guidance_values = np.array(
+            [0.3, -np.pi / 4, -np.pi / 2]
+        )  # guidance values TEMPORARY
+        self.guidance_values_aug = np.array(
+            [0.3, -np.pi / 4, -np.pi / 2, 0.0, 0.0, 0.0]
+        )  # augmented guidance values TEMPORARY
 
+        self.M = np.array(
+            [[30, 0.6, 0], [0.6, 1.629, 0], [0, 0, 1.769]]
+        )  # mass matrix with mass = 30kg
 
-        self.M = np.array([[30, 0.6, 0], 
-                           [0.6, 1.629, 0], 
-                           [0, 0, 1.769]])  # mass matrix with mass = 30kg
-        
         self.M_inv = np.linalg.inv(self.M)  # inverse of mass matrix
 
         self.A = np.eye(3)  # depending on number of states
@@ -122,25 +144,29 @@ class VelocityLQRNode(Node):
         self.B_aug = np.eye(6, 3)  # Augmented B matrix
 
         # TODO make this into config file
-        
+
         self.Q_surge = 75
         self.Q_pitch = 165
         self.Q_yaw = 165
-        
+
         self.R_surge = 0.1
         self.R_pitch = 0.3
         self.R_yaw = 0.3
-        
+
         self.Q = np.diag([self.Q_surge, self.Q_pitch, self.Q_yaw])  # state cost matrix
-        self.R = np.diag([self.R_surge, self.R_pitch, self.R_yaw])  # control cost matrix
+        self.R = np.diag(
+            [self.R_surge, self.R_pitch, self.R_yaw]
+        )  # control cost matrix
 
         self.I_surge = 0.35  # Augmented state cost for surge
         self.I_pitch = 0.40  # Augmented state cost for pitch
         self.I_yaw = 0.35  # Augmented state cost for yaw
 
         self.Q_aug = np.block(
-            [[self.Q, np.zeros((3, 3))],
-             [np.zeros((3, 3)), np.diag([self.I_surge, self.I_pitch, self.I_yaw])]]
+            [
+                [self.Q, np.zeros((3, 3))],
+                [np.zeros((3, 3)), np.diag([self.I_surge, self.I_pitch, self.I_yaw])],
+            ]
         )  # Augmented state cost matrix
 
         self.integral_error_surge = 0.0
@@ -158,18 +184,25 @@ class VelocityLQRNode(Node):
     # ---------------------------------------------------------------Callback Functions---------------------------------------------------------------
 
     def nucleus_callback(self, msg: Odometry):  # callback function
-
         dummy, self.states[1], self.states[2] = quaternion_to_euler_angle(
-            msg.pose.pose.orientation.w, msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z
+            msg.pose.pose.orientation.w,
+            msg.pose.pose.orientation.x,
+            msg.pose.pose.orientation.y,
+            msg.pose.pose.orientation.z,
         )
 
         self.states[0] = msg.twist.twist.linear.x
 
         self.C = calculate_coriolis_matrix(
-            msg.twist.twist.angular.y, msg.twist.twist.angular.z, msg.twist.twist.linear.y, msg.twist.twist.linear.z
+            msg.twist.twist.angular.y,
+            msg.twist.twist.angular.z,
+            msg.twist.twist.linear.y,
+            msg.twist.twist.linear.z,
         )  # coriolis matrix
 
-    def guidance_callback(self, msg: LOSGuidance):  # Function to read data from guidance
+    def guidance_callback(
+        self, msg: LOSGuidance
+    ):  # Function to read data from guidance
         if source_from_abu == True:
             self.guidance_values[0] = msg.surge
             self.guidance_values[1] = msg.pitch
@@ -199,15 +232,27 @@ class VelocityLQRNode(Node):
         self.B = self.M_inv
 
         # Augment the A and B matrices for integrators for surge, pitch, and yaw
-        self.A_aug = np.block([[self.A, np.zeros((3, 3))], [-np.eye(3), np.zeros((3, 3))]])  # Integrators added for surge, pitch, and yaw
-        self.B_aug = np.block([[self.B], [np.zeros((3, 3))]])  # Control input does not affect integrators directly
+        self.A_aug = np.block(
+            [[self.A, np.zeros((3, 3))], [-np.eye(3), np.zeros((3, 3))]]
+        )  # Integrators added for surge, pitch, and yaw
+        self.B_aug = np.block(
+            [[self.B], [np.zeros((3, 3))]]
+        )  # Control input does not affect integrators directly
 
         # CT LQR controller from control library python
-        self.K_aug, self.S_aug, self.E_aug = ct.lqr(self.A_aug, self.B_aug, self.Q_aug, self.R)
+        self.K_aug, self.S_aug, self.E_aug = ct.lqr(
+            self.A_aug, self.B_aug, self.Q_aug, self.R
+        )
 
-        surge_error = self.guidance_values[0] - self.states[0]  # Surge error no need for angle wrapping
-        pitch_error = ssa(self.guidance_values[1] - self.states[1])  # Apply ssa to pitch error
-        yaw_error = ssa(self.guidance_values[2] - self.states[2])  # Apply ssa to yaw error
+        surge_error = (
+            self.guidance_values[0] - self.states[0]
+        )  # Surge error no need for angle wrapping
+        pitch_error = ssa(
+            self.guidance_values[1] - self.states[1]
+        )  # Apply ssa to pitch error
+        yaw_error = ssa(
+            self.guidance_values[2] - self.states[2]
+        )  # Apply ssa to yaw error
 
         # Update the integrators for surge, pitch, and yaw
 
@@ -227,7 +272,14 @@ class VelocityLQRNode(Node):
             self.z_yaw += 0.0
 
         # Augmented state vector including integrators
-        u_aug = -self.K_aug @ (-surge_error, -pitch_error, -yaw_error, self.integral_error_surge, self.z_pitch, self.z_yaw)  # Augmented control input
+        u_aug = -self.K_aug @ (
+            -surge_error,
+            -pitch_error,
+            -yaw_error,
+            self.integral_error_surge,
+            self.z_pitch,
+            self.z_yaw,
+        )  # Augmented control input
 
         # --------------------------------------------- SURGE ANTIWINDUP -------------------------------------------------------
         if abs(u_aug[0]) > invalid_force:

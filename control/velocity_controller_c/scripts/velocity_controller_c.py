@@ -9,7 +9,7 @@ from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray
 
 
-#A function to convert orientation quaternions to euler angles
+# A function to convert orientation quaternions to euler angles
 def quaternion_to_euler_angle(w, x, y, z):
     ysqr = y * y
 
@@ -40,23 +40,21 @@ def ssa(angle):
 
 def rotate_point(x, y, z, theta, phi, psi):
     # Rotation matrix
-    R = np.array([[
-        np.cos(theta) * np.cos(psi),
-        np.sin(phi) * np.sin(theta) * np.cos(psi) - np.cos(phi) * np.sin(psi),
-        np.cos(phi) * np.sin(theta) * np.cos(psi) + np.sin(phi) * np.sin(psi)
-    ],
-                  [
-                      np.cos(theta) * np.sin(psi),
-                      np.sin(phi) * np.sin(theta) * np.sin(psi) +
-                      np.cos(phi) * np.cos(psi),
-                      np.cos(phi) * np.sin(theta) * np.sin(psi) -
-                      np.sin(phi) * np.cos(psi)
-                  ],
-                  [
-                      -np.sin(theta),
-                      np.sin(phi) * np.cos(theta),
-                      np.cos(phi) * np.cos(theta)
-                  ]])
+    R = np.array(
+        [
+            [
+                np.cos(theta) * np.cos(psi),
+                np.sin(phi) * np.sin(theta) * np.cos(psi) - np.cos(phi) * np.sin(psi),
+                np.cos(phi) * np.sin(theta) * np.cos(psi) + np.sin(phi) * np.sin(psi),
+            ],
+            [
+                np.cos(theta) * np.sin(psi),
+                np.sin(phi) * np.sin(theta) * np.sin(psi) + np.cos(phi) * np.cos(psi),
+                np.cos(phi) * np.sin(theta) * np.sin(psi) - np.sin(phi) * np.cos(psi),
+            ],
+            [-np.sin(theta), np.sin(phi) * np.cos(theta), np.cos(phi) * np.cos(theta)],
+        ]
+    )
     # Point to be rotated
     P = np.array([x, y, z])
     # Rotated point
@@ -66,25 +64,28 @@ def rotate_point(x, y, z, theta, phi, psi):
 
 
 class VelocityNode(Node):
-
     def __init__(self):
         super().__init__("input_subscriber")
         self.nucleus_subscriber = self.create_subscription(
-            Odometry, "/nucleus/odom", self.nucleus_callback, 10)
+            Odometry, "/nucleus/odom", self.nucleus_callback, 10
+        )
 
         self.guidance_subscriber = self.create_subscription(
-            Float32MultiArray, "/guidance/los", self.guidance_callback, 10)
+            Float32MultiArray, "/guidance/los", self.guidance_callback, 10
+        )
 
         self.publisher_controller = self.create_publisher(
-            Wrench, "/thrust/wrench_input", 10)
-        self.publisher_states = self.create_publisher(Float32MultiArray,
-                                                      "/Velocity/States", 10)
+            Wrench, "/thrust/wrench_input", 10
+        )
+        self.publisher_states = self.create_publisher(
+            Float32MultiArray, "/Velocity/States", 10
+        )
         self.control_timer = self.create_timer(0.1, self.publish_callback)
         self.state_timer = self.create_timer(0.3, self.publish_states)
         self.topic_subscriber = self.create_subscription(
-            Odometry, "/nucleus/odom", self.nucleus_callback, 10)
-        self.publisher = self.create_publisher(Wrench, "/thrust/wrench_input",
-                                               10)
+            Odometry, "/nucleus/odom", self.nucleus_callback, 10
+        )
+        self.publisher = self.create_publisher(Wrench, "/thrust/wrench_input", 10)
         self.timer = self.create_timer(0.1, self.publish_callback)
 
         # Defining all the errors of all the states
@@ -125,21 +126,28 @@ class VelocityNode(Node):
         self.get_logger().info("Velocity Controller Node has been started")
 
     def nucleus_callback(self, msg: Odometry):  # callback function
-        self.position = np.array([
-            msg.pose.pose.position.x,
-            msg.pose.pose.position.y,
-            msg.pose.pose.position.z,
-        ])
+        self.position = np.array(
+            [
+                msg.pose.pose.position.x,
+                msg.pose.pose.position.y,
+                msg.pose.pose.position.z,
+            ]
+        )
 
-        self.twist = np.array([
-            msg.twist.twist.linear.x, msg.twist.twist.linear.y,
-            msg.twist.twist.linear.z
-        ])
+        self.twist = np.array(
+            [
+                msg.twist.twist.linear.x,
+                msg.twist.twist.linear.y,
+                msg.twist.twist.linear.z,
+            ]
+        )
 
-        X, Y, Z = quaternion_to_euler_angle(msg.pose.pose.orientation.w,
-                                            msg.pose.pose.orientation.x,
-                                            msg.pose.pose.orientation.y,
-                                            msg.pose.pose.orientation.z)
+        X, Y, Z = quaternion_to_euler_angle(
+            msg.pose.pose.orientation.w,
+            msg.pose.pose.orientation.x,
+            msg.pose.pose.orientation.y,
+            msg.pose.pose.orientation.z,
+        )
         self.orientation = np.array([X, Y, Z])
 
         # self.rotated_point_position[0], self.rotated_point_position[1], self.rotated_point_position[2] = rotate_point(self.position[0], self.position[1], self.position[2], Y, X, Z)
@@ -148,7 +156,6 @@ class VelocityNode(Node):
         self.abu_values = msg.data
 
     def publish_callback(self):  # The controller function
-
         self.surge_error = self.abu_values[0] - self.twist[0]
         self.heave_error = self.abu_values[1] - self.rotated_point_position[2]
         self.pitch_error = ssa(self.abu_values[2] - self.orientation[1])
@@ -169,16 +176,18 @@ class VelocityNode(Node):
         #     msg.force.x = 0.0
 
         self.pitch_integral_sum += self.pitch_error
-        msg.torque.y = -(self.pitch_error * self.Kp_pitch +
-                         self.pitch_integral_sum * self.Ti_pitch)  # PITCH
+        msg.torque.y = -(
+            self.pitch_error * self.Kp_pitch + self.pitch_integral_sum * self.Ti_pitch
+        )  # PITCH
 
         if abs(self.yaw_error) > 0.005:
             self.yaw_integral_sum += self.yaw_error
         else:
             self.yaw_integral_sum = 0.0
 
-        msg.torque.z = -(self.yaw_error * self.Kp_yaw +
-                         self.yaw_integral_sum * self.Ti_yaw)  # YAW
+        msg.torque.z = -(
+            self.yaw_error * self.Kp_yaw + self.yaw_integral_sum * self.Ti_yaw
+        )  # YAW
 
         # if abs(self.heave_error) > 0.005:
         #     self.heave_integral_sum += self.heave_error
@@ -191,9 +200,14 @@ class VelocityNode(Node):
     def publish_states(self):
         msg = Float32MultiArray()
         msg.data = [
-            self.abu_values[2], self.abu_values[3], self.orientation[1],
-            self.orientation[2], self.abu_values[0], self.abu_values[1],
-            self.twist[0], self.twist[2]
+            self.abu_values[2],
+            self.abu_values[3],
+            self.orientation[1],
+            self.orientation[2],
+            self.abu_values[0],
+            self.abu_values[1],
+            self.twist[0],
+            self.twist[2],
         ]
         self.publisher_states.publish(msg)
 
