@@ -1,0 +1,1 @@
+This package contains the velocity controller for the AUV Orca. The controller utilizes an LQR optimal controller (imported from the python control library), and controls pitch, yaw and surge. The controller is meant to traverse larger distances.
