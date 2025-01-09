@@ -1,0 +1,25 @@
+los_guidance_node:
+  ros__parameters:
+    los_guidance:
+      delta_h: 2.0                # Horizontal look-ahead distance
+      delta_v: 2.0                # Vertical look-ahead distance
+      gamma_h: 1.0                # Horizontal adaptive gain
+      gamma_v: 1.0                # Vertical adaptive gain
+      M_theta: 0.5                # Bound for parameter estimates
+      epsilon: 0.1                # Padding for parameter estimates
+      nominal_speed: 1.0          # Nominal surge speed
+      min_speed: 0.1              # Minimum allowable surge speed
+      dt: 0.01                    # Time step for guidance updates
+      filter:
+        omega_diag: [2.5, 2.5, 2.5]  # Natural frequencies for surge, pitch, and yaw
+        zeta_diag: [0.7, 0.7, 0.7]   # Damping ratios for surge, pitch, and yaw
+
+    topics:
+      publishers:
+        los_commands: '/guidance/los'
+        debug:
+          reference: '/guidance/debug/reference'
+          errors: '/guidance/debug/errors'
+          logs: '/guidance/debug/logs'
+      subscribers:
+        odometry: '/orca/odom'
