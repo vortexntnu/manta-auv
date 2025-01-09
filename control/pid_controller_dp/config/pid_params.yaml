@@ -1,0 +1,8 @@
+pid_controller_node:
+  ros__parameters:
+    control_topic: /thrust/wrench_input
+    dp_reference_topic: /dp/reference
+    odom_topic: /orca/odom
+    Kp: [70.0, 70.0, 70.0, 12.0, 12.0, 12.0]
+    Ki: [2.0, 2.0, 2.0, 0.12, 0.12, 0.12]
+    Kd: [10.0, 10.0, 10.0, 4.0, 5.0, 4.0]
