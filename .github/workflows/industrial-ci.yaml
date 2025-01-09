@@ -1,0 +1,12 @@
+name: Industrial CI
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 1 * * *' # Runs daily to check for dependency issues or flaking tests
+jobs:
+  call_reusable_workflow:
+    uses: vortexntnu/vortex-ci/.github/workflows/reusable-industrial-ci.yml@main
+    with:
+        upstream_workspace: './vortex_auv.repos'
