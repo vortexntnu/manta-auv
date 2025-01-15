@@ -12,5 +12,6 @@ jobs:
     with:
       ros_distro: 'humble'
       os_name: 'ubuntu-22.04'
-      ref: ${{ github.ref_name }}
+      ref: ${{ github.ref }}
       vcs_repo_file_url: 'https://raw.githubusercontent.com/vortexntnu/vortex-auv/main/ros2.repos'
+      dependency_script: 'requirements.sh'

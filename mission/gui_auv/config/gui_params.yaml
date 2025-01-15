@@ -1,9 +1,0 @@
-/**:
-  ros__parameters:
-    gui_auv:
-      odom_topic: "/nucleus/odom"
-      current_topic: "/auv/power_sense_module/current"
-      voltage_topic: "/auv/power_sense_module/voltage"
-      temperature_topic: "/auv/temperature"
-      pressure_topic: "/auv/pressure"
-      history_length: 30 # seconds
