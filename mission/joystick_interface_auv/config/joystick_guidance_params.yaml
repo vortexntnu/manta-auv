@@ -1,0 +1,8 @@
+joystick_interface_auv:
+  ros__paramteres:
+    surge_scale_ref_param: 300
+    sway_scale_ref_param: 300
+    heave_scale_ref_param: 300
+    roll_scale_ref_param: 300
+    pitch_scale_ref_param: 300
+    yaw_scale_ref_param: 300

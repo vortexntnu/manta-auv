@@ -1,0 +1,7 @@
+reference_filter_node:
+  ros__parameters:
+    reference_filter_topic: /aruco_board_pose_camera
+    dp_reference_topic: /dp/reference
+    nucleus_odom_topic: /orca/odom
+    zeta: [1., 1., 1., 1., 1., 1.]
+    omega: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]

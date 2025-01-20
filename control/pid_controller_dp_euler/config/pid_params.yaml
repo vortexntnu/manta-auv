@@ -1,0 +1,10 @@
+pid_controller_euler_node:
+  ros__parameters:
+    control_topic: /thrust/wrench_input
+    reference_topic: /dp/reference
+    odom_topic: /orca/odom
+    software_kill_switch_topic: /softwareKillSwitch
+    software_operation_mode_topic: /softwareOperationMode
+    Kp: [70.0, 70.0, 70.0, 15.0, 15.0, 15.0]
+    Ki: [9.0, 9.0, 9.0, 1.0, 1.5, 1.5]
+    Kd: [20.0, 20.0, 20.0, 0.1, 1.0, 1.0]

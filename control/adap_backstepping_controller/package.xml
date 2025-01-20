@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>adap_backstepping_controller</name>
+  <version>0.0.0</version>
+  <description>This package provides the implementation testing of the adaptive backstepping controller for AUV</description>
+  <maintainer email="talhanc@stud.ntnu.no">vortex</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>python-transforms3d-pip</depend>
+  <depend>geometry_msgs</depend>
+  <depend>vortex_msgs</depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

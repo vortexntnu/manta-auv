@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    adap_backstepping_controller:
+      K1_diag: [10.0, 10.0, 10.0] # First gain matrix
+      K2_diag: [60.0, 60.0, 60.0] # Second gain matrix

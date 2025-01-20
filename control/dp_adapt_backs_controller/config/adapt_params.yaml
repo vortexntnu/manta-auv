@@ -1,0 +1,15 @@
+dp_adapt_backs_controller_node:
+  ros__parameters:
+    control_topic: /thrust/wrench_input
+    dp_reference_topic: /dp/reference
+    odom_topic: /orca/odom
+    pose_topic: /dvl/pose
+    twist_topic: /dvl/twist
+    K1 : [20.5, 15.5, 20.5, 1.2, 6.0, 2.5]
+    K2 : [30.5, 25.5, 30.5, 2.6, 10.0, 6.5]
+    r_b_bg : [0.01, 0.0, 0.02]
+    adapt_gain : [0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8]
+    d_gain : [0.3, 0.3, 0.45, 0.2, 0.7, 0.6]
+    inertia_matrix : [0.68, 3.32, 3.34]
+    mass_matrix : [ 30.0, 0.0, 0.0, 0.0, 0.0, 0.6, 0.0, 30.0, 0.0, 0.0, -0.6, 0.3, 0.0, 0.0, 30.0, 0.6, 0.3, 0.0, 0.0, 0.0, 0.6, 0.68, 0.0, 0.0, 0.0, -0.6, 0.3, 0.0, 3.32, 0.0, 0.6, 0.3, 0.0, 0.0, 0.0, 3.34]
+    m : 30.0
